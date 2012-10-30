@@ -1,0 +1,22 @@
+Nonstationary Poisson Processes - Discrete Event Simulation
+
+http://www.cs.ucr.edu/~ciardo/teaching/CS177/section7.5.pdf
+
+The thinning algorithm for poisson processes, used in poisson.py, methods
+poisson() and poissonFun().
+
+
+Simulation of Non-Homogeneous Poisson Processes by Thinning
+
+http://www.dtic.mil/dtic/tr/fulltext/u2/a059904.pdf
+
+Proof of correctness for the thinning algorithm, given on pages 5-7, Theorem 1
+and Algorithm 1
+
+
+MatPlotLib
+
+http://matplotlib.org/
+
+Mathematical library for Python, used throughout all code for generating random
+variables, plotting graphs, etc.

@@ -28,9 +28,13 @@ def poisson(lamb, tmax):
         vs.append(v)
         
     return vs[:-1]
-    
+
+#TODO, this is slightly slower than it could be, vs.remove is probably linear 
+#time, so cycling through indices is likely much faster    
 def poissonFun2(lambMax, lamb, tmax):
     vs = poisson(lambMax, tmax)
+    
+    
     
     for v in vs[1:]:
         if uniform(0,1) > lamb(v)/lambMax: vs.remove(v)
@@ -56,11 +60,6 @@ def foo(x):
 def main():
     xs = poissonFun2(10,foo,100)
     plotPoisson(xs)
-    ys = poissonFun2(10,lambda x:10, 100)
-    plotPoisson(ys)
-    
-    avgPoissons(xs)
-    avgPoissons(ys)
     
     show()
 	
