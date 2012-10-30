@@ -29,20 +29,25 @@ def poisson(lamb, tmax):
         
     return vs[:-1]
 
-#TODO, this is slightly slower than it could be, vs.remove is probably linear 
-#time, so cycling through indices is likely much faster    
 def poissonFun2(lambMax, lamb, tmax):
     """Given a maximum rate parameter, a rate function, and a maximum time, 
     generates a poisson process of rate given by the rate function up to the
     maximum time.
     
     The maximum rate parameter must be a tight upper bound for the rate 
-    function. This cannot automatically be calculated. 
-    """
-    vs = poisson(lambMax, tmax)
+    function. This cannot automatically be calculated."""
     
-    for v in vs[1:]:
-        if uniform(0,1) > lamb(v)/lambMax: vs.remove(v)
+    vs = poisson(lambMax, tmax)
+    xmax = len(vs)
+    x=1
+    
+    while x<xmax:
+        if uniform(0,1) > lamb(vs[x])/lambMax: 
+            vs.pop(x)
+            xmax=xmax-1
+        else:
+            x=x+1
+        
         
     return vs
         
@@ -53,7 +58,6 @@ def plotPoisson(xs, args=''):
     show() must be called afterwards to display the plot"""
 	
     ys = [x for x in range(len(xs)) for _ in (0,1)][:-1]
-    
     xs = [xs[0]]+[x for x in xs[1:] for _ in (0,1)]
 
     plot(xs,ys,args)
