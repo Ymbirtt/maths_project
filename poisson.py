@@ -59,9 +59,6 @@ def main():
     ys = poissonFun2(10,lambda x:10, 100)
     plotPoisson(ys)
     
-    avgPoissons(xs)
-    avgPoissons(ys)
-    
     show()
 	
 	
