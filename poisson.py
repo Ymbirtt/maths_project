@@ -63,7 +63,7 @@ def main():
     ys = []
     
     samples = 20000
-    bins = 200
+    bins = 400
     
     tmax = 200
     lmax = 40
@@ -84,7 +84,7 @@ def main():
     
     ys = [(y*(bins*lmax*lmax))/(samples*tmax) for y in ys]
 	
-    bar(range(0,tmax,tmax//bins),ys,tmax//bins)
+    bar(arange(0,tmax,tmax/bins),ys,tmax/bins)
     plot([foo(x) for x in range(0,tmax)],'red')
     show()
 	
