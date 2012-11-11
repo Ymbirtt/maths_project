@@ -50,18 +50,18 @@ def plotPoisson(xs, args=''):
     plot(xs,ys,args)
 
 def foo(x):
-    if x<50: return 5
-    return 10
+    return 5*sin(x/5)+5
     
 def main():
     ys = []
-    samples = 1000
-    bins = 20
-    tmax=100
+    samples = 2000
+    bins = 100
+    tmax = 100
+    lmax = 10
     
     
     for _ in range(samples):    
-        xs = poissonFun2(10,foo,tmax)
+        xs = poissonFun2(lmax,foo,tmax)
         #plotPoisson(xs)
         ys=xs[1:]+ys
         
@@ -74,9 +74,10 @@ def main():
     show()
     
     
-    ys = [bins*y/samples for y in ys]
+    ys = [(y)/(20) for y in ys]
 	
     bar(range(0,tmax,tmax//bins),ys,tmax//bins)
+    plot([foo(x) for x in range(0,tmax)],'red')
     show()
 	
 	
