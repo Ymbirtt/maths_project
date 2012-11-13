@@ -24,7 +24,7 @@ def poisson(lamb, tmax):
     v = 0
     
     while v < tmax:
-        v = v + expovariate(1/lamb)
+        v = v + expovariate(lamb)
         vs.append(v)
         
     return vs[:-1]
@@ -62,15 +62,16 @@ def baz(x):
 def main():
     ys = []
     
-    samples = 20000
+    samples = 10
     bins = 400
     
     tmax = 200
     lmax = 40
     
     for _ in range(samples):    
-        xs = poissonFun2(lmax,foo,tmax)
+        xs = poissonFun2(lmax,baz,tmax)
         #plotPoisson(xs)
+        #show()
         ys=xs[1:]+ys
         
     #show()
@@ -82,10 +83,10 @@ def main():
     show()
     
     
-    ys = [(y*(bins*lmax*lmax))/(samples*tmax) for y in ys]
+    ys = [(y*bins)/(samples*tmax) for y in ys]
 	
-    bar(arange(0,tmax,tmax/bins),ys,tmax/bins)
-    plot([foo(x) for x in range(0,tmax)],'red')
+    bar(arange (0,tmax,tmax/bins),ys,tmax/bins)
+    plot([baz(x) for x in range(0,tmax)],'red')
     show()
 	
 	

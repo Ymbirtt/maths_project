@@ -2,7 +2,7 @@ Nonstationary Poisson Processes - Discrete Event Simulation
 
 http://www.cs.ucr.edu/~ciardo/teaching/CS177/section7.5.pdf
 
-The thinning algorithm for poisson processes, used in poisson.py, methods
+A thinning algorithm for poisson processes, can be used in poisson.py, methods
 poisson() and poissonFun().
 
 
