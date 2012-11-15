@@ -31,9 +31,19 @@ def poisson(lamb, tmax):
     
 def poissonFun2(lambMax, lamb, tmax):
     vs = poisson(lambMax, tmax)
+    xmax = len(vs)
+    x=1
     
-    for v in vs[1:]:
-        if uniform(0,1) > lamb(v)/lambMax: vs.remove(v)
+    while x<xmax:
+        if uniform(0,1)>lamb(vs[x])/lambMax:
+            vs.pop(x)
+            xmax=xmax-1
+        else:
+            x=x+1
+            
+    
+    #for v in vs[1:]:
+    #    if uniform(0,1) > lamb(v)/lambMax: vs.remove(v)
         
     return vs
         
@@ -54,19 +64,19 @@ def foo(x):
     
 def baz(x):
     if x<20:
-        return 5
+        return 1/5
     if x<60:
-        return 40
-    return 5
+        return 1/40
+    return 1/5
     
 def main():
     ys = []
     
-    samples = 10
+    samples = 1000
     bins = 400
     
     tmax = 200
-    lmax = 40
+    lmax = 1/5
     
     for _ in range(samples):    
         xs = poissonFun2(lmax,baz,tmax)
