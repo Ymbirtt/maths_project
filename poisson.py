@@ -1,6 +1,8 @@
 from __future__ import division
 from random import *
 from pylab import *   
+from scipy.cluster.vq import *
+
 
 def poissonFun(lambMax, lamb, tmax):
     vs = [0]
@@ -40,11 +42,6 @@ def poissonFun2(lambMax, lamb, tmax):
             xmax=xmax-1
         else:
             x=x+1
-            
-    
-    #for v in vs[1:]:
-    #    if uniform(0,1) > lamb(v)/lambMax: vs.remove(v)
-        
     return vs
         
 
@@ -63,20 +60,18 @@ def foo(x):
     return 20*sin(x/5)+20
     
 def baz(x):
-    if x<20:
-        return 1/5
-    if x<60:
-        return 1/40
-    return 1/5
+    if x<100:
+        return 1
+    return 0.5
     
 def main():
     ys = []
     
     samples = 1000
-    bins = 400
+    bins = 100
     
     tmax = 200
-    lmax = 1/5
+    lmax = 1
     
     for _ in range(samples):    
         xs = poissonFun2(lmax,baz,tmax)
@@ -90,15 +85,32 @@ def main():
     #show()
  
     ys,_,_= hist(ys,bins)
-    show()
+    cla()
     
     
     ys = [(y*bins)/(samples*tmax) for y in ys]
-	
+
     bar(arange (0,tmax,tmax/bins),ys,tmax/bins)
     plot([baz(x) for x in range(0,tmax)],'red')
     show()
-	
+
+    ys = [(ys[x-2] + ys[x-1]+ys[x]+ys[x+1]+ys[x+2])/5 for x in range(2,len(ys)-2)]
+    bar(arange (0,tmax,tmax/bins)[2:-2],ys,tmax/bins)
+    plot([baz(x) for x in range(0,tmax)],'red')
+    show()
+
+    means=[m*sqrt(var(ys)) for m in kmeans(whiten(ys),2)]
+
+    print means
+
+    diffs = [(ys[x]-ys[x-1])/(bins/tmax) for x in range(1,len(ys))]
+    diffs = filter(None,diffs)
+
+    scatter([log(abs(d)) for d in diffs],[0 for _ in diffs])
+    show()
+
+    print mean(diffs) 
+    print diffs
 	
     
 if __name__ == "__main__":
