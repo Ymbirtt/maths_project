@@ -60,21 +60,27 @@ def argmin(args,f):
     m=args[0]
     
     for x in args[1:]:
-        if f(x)<m:
+        if f(x)<f(m):
             m=x
+            
     return m
 
 def fit(xs,clusters):
     means=[m*sqrt(var(xs)) for m in kmeans(whiten(xs),2)][0]
-    ys = [0]*len(xs)
+    ys = [0 for _ in range(len(xs))]
     
     for n in range(len(xs)):
         cluster = argmin(means,lambda x:abs(x-xs[n]))
         ys[n] = (xs[n],cluster)
+        print ys[n]
     return (ys,means)
 
+def lookup(x,xs,width):
+    index = int(x/width)
+    return xs[index][1]
+
 def foo(x):
-    return 20*sin(x/5)+20
+    return sin(x/5)+1
     
 def baz(x):
     if x<100:
@@ -88,10 +94,10 @@ def main():
     bins = 100
     
     tmax = 200
-    lmax = 1
+    lmax = 2
     
     for _ in range(samples):    
-        xs = poissonFun2(lmax,baz,tmax)
+        xs = poissonFun2(lmax,foo,tmax)
         #plotPoisson(xs)
         #show()
         ys=xs[1:]+ys
@@ -108,13 +114,16 @@ def main():
     ys = [(y*bins)/(samples*tmax) for y in ys]
 
     bar(arange (0,tmax,tmax/bins),ys,tmax/bins)
-    plot([baz(x) for x in range(0,tmax)],'red')
+    plot([foo(x) for x in range(0,tmax)],'red')
     show()
 
     zs,ms = fit(ys,2)
+       
+    f=lambda x:lookup(x,zs,tmax/bins)
     
-    #f = buildFun(zs,ms,tmax/bins)
-
+    plot([foo(x) for x in range(0,tmax)],'red')
+    plot([f(x) for x in range(0,tmax)],'blue')
+    show()
 	
     
 if __name__ == "__main__":
