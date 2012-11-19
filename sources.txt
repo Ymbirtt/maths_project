@@ -20,3 +20,9 @@ http://matplotlib.org/
 
 Mathematical library for Python, used throughout all code for generating random
 variables, plotting graphs, etc.
+
+SciPy
+
+http://www.scipy.org/
+
+Scientific python library, contains the used implementation of kmeans clustering
