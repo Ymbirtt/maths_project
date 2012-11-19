@@ -56,6 +56,23 @@ def plotPoisson(xs, args=''):
 
     plot(xs,ys,args)
 
+def argmin(args,f):
+    m=args[0]
+    
+    for x in args[1:]:
+        if f(x)<m:
+            m=x
+    return m
+
+def fit(xs,clusters):
+    means=[m*sqrt(var(xs)) for m in kmeans(whiten(xs),2)][0]
+    ys = [0]*len(xs)
+    
+    for n in range(len(xs)):
+        cluster = argmin(means,lambda x:abs(x-xs[n]))
+        ys[n] = (xs[n],cluster)
+    return (ys,means)
+
 def foo(x):
     return 20*sin(x/5)+20
     
@@ -94,23 +111,10 @@ def main():
     plot([baz(x) for x in range(0,tmax)],'red')
     show()
 
-    ys = [(ys[x-2] + ys[x-1]+ys[x]+ys[x+1]+ys[x+2])/5 for x in range(2,len(ys)-2)]
-    bar(arange (0,tmax,tmax/bins)[2:-2],ys,tmax/bins)
-    plot([baz(x) for x in range(0,tmax)],'red')
-    show()
+    zs,ms = fit(ys,2)
+    
+    #f = buildFun(zs,ms,tmax/bins)
 
-    means=[m*sqrt(var(ys)) for m in kmeans(whiten(ys),2)]
-
-    print means
-
-    diffs = [(ys[x]-ys[x-1])/(bins/tmax) for x in range(1,len(ys))]
-    diffs = filter(None,diffs)
-
-    scatter([log(abs(d)) for d in diffs],[0 for _ in diffs])
-    show()
-
-    print mean(diffs) 
-    print diffs
 	
     
 if __name__ == "__main__":
