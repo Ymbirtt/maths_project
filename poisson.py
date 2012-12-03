@@ -66,13 +66,12 @@ def argmin(args,f):
     return m
 
 def fit(xs,clusters):
-    means=[m*sqrt(var(xs)) for m in kmeans(whiten(xs),2)][0]
+    means=[m*sqrt(var(xs)) for m in kmeans(whiten(xs),clusters)][0]
     ys = [0 for _ in range(len(xs))]
     
     for n in range(len(xs)):
         cluster = argmin(means,lambda x:abs(x-xs[n]))
         ys[n] = (xs[n],cluster)
-        print ys[n]
     return (ys,means)
 
 def lookup(x,xs,width):
@@ -80,7 +79,7 @@ def lookup(x,xs,width):
     return xs[index][1]
 
 def foo(x):
-    return sin(x/5)+1
+    return 0.1*sin(x/5)+0.1
     
 def baz(x):
     if x<100:
@@ -89,15 +88,15 @@ def baz(x):
     
 def main():
     ys = []
-    
-    samples = 1000
+    .
+    samples = 100
     bins = 100
     
     tmax = 200
     lmax = 2
     
     for _ in range(samples):    
-        xs = poissonFun2(lmax,foo,tmax)
+        xs = poissonFun2(lmax,baz,tmax)
         #plotPoisson(xs)
         #show()
         ys=xs[1:]+ys
@@ -114,14 +113,14 @@ def main():
     ys = [(y*bins)/(samples*tmax) for y in ys]
 
     bar(arange (0,tmax,tmax/bins),ys,tmax/bins)
-    plot([foo(x) for x in range(0,tmax)],'red')
+    plot([baz(x) for x in range(0,tmax)],'red')
     show()
 
     zs,ms = fit(ys,2)
        
     f=lambda x:lookup(x,zs,tmax/bins)
     
-    plot([foo(x) for x in range(0,tmax)],'red')
+    plot([baz(x) for x in range(0,tmax)],'red')
     plot([f(x) for x in range(0,tmax)],'blue')
     show()
 	
