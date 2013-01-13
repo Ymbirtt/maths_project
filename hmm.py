@@ -1,7 +1,7 @@
 from __future__ import division
 from random  import *
 from pylab import *
-
+from rpy2.robjects import *
 
 def mindex(xs):
     x = xs[0]
@@ -12,7 +12,7 @@ def mindex(xs):
     return min
 
 #Todo: make this work for 0-rate processes
-def poisson(lamb,t0 , tmax):
+def poisson(lamb, t0, tmax):
     vs = [t0]   
     v = t0
 
@@ -45,7 +45,7 @@ rates  = {
 
 state = choice(states)
 
-t_max = 100
+t_max = 10000
 t=0
 ts = [(0,state)]
 process = []
@@ -61,5 +61,48 @@ while t<t_max:
 
 print ts
 print process
-plotPoisson(process)
-show()
+#plotPoisson(process)
+#show()
+
+print len(process)
+
+#ts = [0] + [process[i+1]-process[i] for i in range(len(process)-1)]
+
+process = FloatVector(process)
+
+r('''library(HiddenMarkov)''')
+
+r('''mmpp(NULL,matrix(c(0,0,0,0,0,0,0,0,0),3),c(1/3,1/3,1/3),c(1,1,1))''')
+
+r_mmpp = r['mmpp']
+Q = r('''matrix(c(-1,0.5,0.5,0.6,-1.2,0.6,0.7,0.7,-1.4),3)''')
+
+
+model = r_mmpp(process,Q,FloatVector([1/3,1/3,1/3]),FloatVector([1,1,1]))
+
+print model
+
+r_BaumWelch = r['BaumWelch']
+model = r_BaumWelch(model)
+
+print r['summary']model
+
+
+
+#for _ in range(100):
+#    process = []
+#    t=0
+#    state = choice(states)
+#    ts = [(0,state)]
+#    while t<t_max:
+#        Ts,ss = zip(*[(expovariate(rates[state][s]),s) for s in states if s != state])
+#        i = mindex(Ts)
+#        if state != 0: process += poisson(state,t,t+Ts[i])
+#        t += Ts[i]
+#        state = ss[i]
+#        ts.append((t,state))
+
+#    model[0] = FloatVector(process)
+#    model = r_BaumWelch(model)  
+
+#print model
