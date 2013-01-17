@@ -84,8 +84,9 @@ print model
 
 r_BaumWelch = r['BaumWelch']
 model = r_BaumWelch(model)
+r['print'](model)
 
-print r['summary']model
+#print r['summary'](model)
 
 
 
