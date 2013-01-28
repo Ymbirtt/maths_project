@@ -2,6 +2,8 @@ from __future__ import division
 from random  import *
 from pylab import *
 from rpy2.robjects import *
+from itertools import *
+from datetime import *
 
 def mindex(xs):
     x = xs[0]
@@ -54,6 +56,20 @@ def fitmmpp(tau, states):
     
     return r['BaumWelch'](model)
     
+def getDates(f):
+    
+    f = open(f,'r')
+    f = f.read().split('\n')
+    contents = []
+    for l in f:
+        l=l.split(',')[1:]
+        l = map(lambda x:datetime.strptime(x,"%Y-%m-%d %H:%M:%S"),l)
+        l.sort()
+        contents.append(l)
+    
+    
+    return contents
+    
     
     
 
@@ -70,20 +86,29 @@ rates  = {
 state = choice(states)
 
 t_max = 10000
+sims = 1
+
 t=0
-ts = [(0,state)]
 process = []
+ts = [(0,state)]
 
 
-while t<t_max:
-    Ts,ss = zip(*[(expovariate(rates[state][s]),s) for s in states if s != state])
-    i = mindex(Ts)
-    if state != 0: process += poisson(state,t,t+Ts[i])
-    t += Ts[i]
-    state = ss[i]
-    ts.append((t,state))
+for _ in range(sims):
+    t = 0
+    state = choice(states)
+    ts = [(0,state)]
+    while t<t_max:
+        Ts,ss = zip(*[(expovariate(rates[state][s]),s) for s in states if s != state])
+        i = mindex(Ts)
+        if state != 0: process += poisson(state,t,t+Ts[i])
+        t += Ts[i]
+        state = ss[i]
+        ts.append((t,state))
+    print ts
 
-print ts
+process.sort()
+process = [0] + [x for x in dropwhile(lambda x:x==0,process)]
+
 print process
 print len(process)
 model = fitmmpp(process,3)
