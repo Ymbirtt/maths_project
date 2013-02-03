@@ -21,8 +21,16 @@ http://matplotlib.org/
 Mathematical library for Python, used throughout all code for generating random
 variables, plotting graphs, etc.
 
+
 SciPy
 
 http://www.scipy.org/
 
-Scientific python library, contains the used implementation of kmeans clustering
+Scientific python library, contains an implementation of kmeans clustering
+
+
+Wikipedia article for the Viterbi Algorithm
+
+http://en.wikipedia.org/wiki/Viterbi_Algorithm - 03/02/13, 16:00
+
+Pseudocode on which the Viterbi implementation is based
