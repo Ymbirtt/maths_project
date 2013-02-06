@@ -101,9 +101,6 @@ def malleate(tau):
     
 
 ############################################################
-
-#TODO: Play with ~/HiddenMarkov/R/forwardback.mmpp.R
-
 states = (0,0.5,2)
 rates  = {
 0  : {0.5: 1/60, 2:1/30},
