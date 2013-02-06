@@ -130,10 +130,7 @@ for _ in range(sims):
         t += Ts[i]
         state = ss[i]
         ts.append((t,state))
-    print ts
-
-print process[:100]
-print len(process)
+        
 #model = fitmmpp(process,3)
 #plotPoisson(process[:100])
 #shadeStates([(x,y) for (x,y) in ts if x<process[100]])
@@ -144,9 +141,6 @@ print len(process)
 tau = getDates("./twitterextract")
 tau = tau[0][1:]
 tau = malleate(tau)
-print tau
-
-print len(tau)
 
 model = fitmmpp(tau,3)
 r['print'](model)
