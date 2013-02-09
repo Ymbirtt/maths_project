@@ -101,6 +101,8 @@ def malleate(tau):
     
 
 ############################################################
+print "Doing nothing of any importance..."
+
 states = (0,0.5,2)
 rates  = {
 0  : {0.5: 1/60, 2:1/30},
@@ -117,7 +119,6 @@ sims = 1
 t=0
 process = []
 ts = [(0,state)]
-
 
 for _ in range(sims):
     t = 0
@@ -137,15 +138,31 @@ for _ in range(sims):
 #show()
 #r['print'](model)
 #V = r['Viterbi'](model)
+print "Reading data..."
 
 tau = getDates("./twitterextract")
+
+print "Preprocessing data..."
+
 tau = tau[0][1:]
 tau = malleate(tau)
 
+print "Fitting mmpp..." 
+
 model = fitmmpp(tau,3)
-r['print'](model)
-r['print'](r['Viterbi'](model))
-V = r['Viterbi'](model)
+
+print "Predicting state transitions..."
+
+V = list(r['Viterbi'](model))
+
+print "Plotting process..."
+
 plotPoisson(tau)
+
+print "Shading states..."
+
 shadeStates(zip(tau,V))
+
+print "OH MY GOD IT'S A GRAPH"
+
 show()
