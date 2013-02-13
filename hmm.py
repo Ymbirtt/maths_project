@@ -60,7 +60,9 @@ def plotPoisson2D(xs):
     scatter(xs,days,marker = 'x')
 
 def shadeStates2D(xs,states):
-    colours = {1:'r',2:'y'  ,3:'g', 4:'c', 5:'k'}
+    """Given a list of times and states at each time, shades in the states at
+    each time (badly)"""
+    colours = {1:'r', 2:'y', 3:'g', 4:'c', 5:'k'}
     
     print len(states)
     print len(xs)
@@ -71,7 +73,6 @@ def shadeStates2D(xs,states):
     for n in range(1,len(days)-1):
         if days[n-1]==days[n]:
             gca().add_patch(Rectangle((xs[n-1],days[n]-0.5),xs[n]-xs[n-1],1,alpha=0.5,color=colours[states[n-1]],linewidth=0))
-            #alpha=1,color='b',linewidth=0
         else:
             gca().add_patch(Rectangle((xs[n-1],days[n-1]-0.5),24-xs[n-1],1,alpha=0.5,color=colours[states[n-1]],linewidth=0))
             gca().add_patch(Rectangle((0,days[n]-0.5),xs[n],1,alpha=0.5,color=colours[states[n-1]],linewidth=0))
@@ -189,7 +190,7 @@ tau = malleate(tau)
 
 print "Fitting mmpp..." 
 
-model = fitmmpp(tau,3)
+model = fitmmpp(tau,4)
 
 #r['print'](model)
 
@@ -203,17 +204,14 @@ V = list(r['Viterbi'](model))
 
 print "Plotting process..."
 
-plotPoisson(tau)
+#plotPoisson(tau)
+plotPoisson2D(times)
 
 print "Shading states..."
 
 #shadeStates(zip(tau,V))
+shadeStates2D(times,V)
 
 print "OH MY GOD IT'S A GRAPH"
-
-show()
-
-plotPoisson2D(times)
-shadeStates2D(times,V)
 
 show()
