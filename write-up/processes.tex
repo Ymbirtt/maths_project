@@ -1,0 +1,74 @@
+\section{Markov Chains}
+
+\subsection{A Formal Definition}
+
+A stochastic process \cite[p590]{doob96} is a collection $\{X_t  | t \in T\}$ (sometimes $X(t)$ for continuous $T$) of random variables. These collections may be indexed arbitrarily, but tend to be used to describe the evolution of some random series of events, using $T$ to be some representation of either discrete or continuous time, for instance $X_t$ may be the number of observed emissions from a radioactive source after $t$ minutes or the lisence plate of the $t^{th}$ car to go past a speed camera.
+
+For Markov Chains, we usually set $T=\{0,1,2,...\}=\mathbb{N}$ or $T =\{x | x \geqslant 0 \} = \mathbb{R}^{+}$. If $T=\mathbb{N}$ and each $X_t$ is a discrete random variable over the set $S$, then we say that $X$ obeys the Markov Property iff
+
+$$
+\forall t \in T, s \in S \quad \pr (X_{t+1} = s | X_0, X_1, ... X_t) = \pr (X_{t+1} = s | X_t)\cite{mwmarkov}
+$$
+
+Similarly, if $T=\mathbb{R}^{+}$, we have a continuous analogue to the Markov Property;
+
+$$
+\forall \delta > 0, s \in S \quad \pr (X(t+\delta) = s | \{X(\tau), \tau < t\}) = \pr (X(t+\delta) = s | X_t)
+$$
+
+If a stochastic process obeys the Markov Property, then we say that it is a Markov Chain. If a stochastic process obeys the continuous analogue to the Markov Property, then it is referred to as a Continuous Time Markov Process (CTMP). We refer to $S$ as the state-space, each $s \in S$ is a state, and $X_t$ represents the state at time t. We usually write the Markov Property as ``given the present, the future is conditionally independent of the past" \cite{mwmarkov}.
+%COVER THIS IN G&S CITATIONS
+
+For CTMPs, we usually define the transition rate matrix $Q$ such that
+
+$$
+\forall i,j \in S, \delta>0 \quad \pr (X(t+\delta)=j|X(t)=i) = q_{ij}\delta + o(\delta)
+$$
+
+Where $o(\delta)$ is some function such that $o(\delta) -> 0$ as $\delta -> 0$. This gives us that
+
+$$
+\forall i,j \in S, \delta>0 \quad \pr (X(t+\delta)=j|X(t)=i) = (e^{\delta Q})_{ij}
+$$
+
+That is, the $i,j^{th}$ element of the matrix exponential of $\delta Q$.
+
+\subsection{An Intuitive Interpretation}
+
+Whilst the above defines Markovian Processes, it fails to describe them in any intuitive way. Before attempting to use them, it is important to be able to deal with both the continuous and discrete-time Markov Chains in an intuitive way. My personal preferred method is to use edge-weighted directed graphs\cite{mwgraph}. Each state in $S$ is given a node in the graph, and for each $i,j \in S$ the edge $(i,j)$ is given weight $p_{ij}$ in the discrete case and $q_{ij}$ in the continuous case.
+
+%EXAMPLE
+
+We can then say that a discrete Markov Chain will hop from node to node at each time step with probabilities defined by the weights of the edges between the current node and its neighbors. A CTMP is slightly more complex; on arriving in a state $i$, all neighboring states $j$ generate a random time $T_j ~ Exp(q_{ij})$. We let $k = \argmin_{j\in S} T_j$, and say that the CTMP will remain in state $i$ for $T_k$ units of time, then jump to state $k$.
+
+\subsection{The Poisson Process}
+
+The simplest form of CTMP is the homogeneous Poisson Process, where $S = \mathbb{N}$ and $\forall i \in S, q_{ii}=-\lambda, q_{i,i+1} = \lambda$. We call $\lambda$ the rate of this process. If N(t) is a Poisson process, we then have that
+
+$$
+\forall i \in \mathbb{N}, t,\delta \in \mathbb{R}^{+}, \pr (N(t+\delta) = i+1 | N(t) = i) = \lambda \delta + o(\delta)
+$$
+
+The graph for this process is similarly simple
+%poot graph here
+
+We can also sacrifice the Markov Property to define an inhomogeneous poisson process. Everything remains from before, except rather than having a rate parameter $\lambda \in \mathbb{R}^{+}$, we have a rate function $\lambda : \mathbb{R}^{+} -> \mathbb{R}^{+}$, where
+
+$$
+\forall i \in \mathbb{N}, t,\delta \in \mathbb{R}^{+}, \pr (N(t+\delta) = i+1 | N(t) = i) = \lambda(t) \delta + o(\delta)
+$$
+
+Since this process is no longer Markovian, it makes little sense to attempt to graph it, however it remains a powerful tool.
+
+\section{Hidden Markov Models}
+
+The Hidden Markov Model is an extention of the Markov Chain used for fitting various stochastic models.
+
+With discrete time and state space, rather than having a directly observable Markov Chain, we assume that the process we observe has an underlying unobservable Markov Chain. We then define an observation space $O$, and a probability distrubtion, $p$, on $S \times O$. Before jumping out of state $i$, the Markov Chain emits observation $o$ with probability $p(i,o)$.
+
+The traditional example is that of the ``unfair casino". Imagine the dealer at the casino has two six-sided dice. Die one is fair, but die two is weighted such that it never shows a $6$, and shows the numbers 1 to 5 with equal probabilities. The dealer will clandestinely swap the dice with probability $0.1$ before rolling. Here, our state space is $\{1,2\}$ and our observation space is $\{1,2,3,4,5,6\}$. We can represent this as follows;
+%POOT DIAGRAM HERE
+
+We can only observe the results of the dice rolls, but what we're interested in is the underlying model. Firstly, we want to know what die the dealer is likely to be using at any given time - if I've seen the dealer roll a 6, I know he was using the fair die then, so he will use the fair die again with probability $0.9$, for example. Further to this, suppose we didn't know the above parameters. We also want to estimate them - how many dice does the casino have, how does the dealer swap them, how do these dice roll?
+
+These questions wil be discussed later on.

@@ -1,0 +1,74 @@
+\documentclass{report}
+
+% The ams packages are required to insert any mathematical symbols that you may require
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+% This package is used for embedding things like PDFs and JPEGs into your document
+\usepackage{graphicx}
+% This package is used for drawing pictures (such as trees)
+\usepackage{tikz}
+% These packages are used for adding pseudo-code to your document
+\usepackage{algorithm2e}
+\usepackage{algorithmic}
+% This package is for if you require an appendix
+\usepackage{appendix}
+
+\usepackage{datetime}
+\usepackage{fancyhdr}
+\usepackage{semantic}
+\usepackage[noload]{qtree}
+\usepackage{comment}
+\usepackage{pdflscape}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{moreverb}
+\usepackage{caption}
+\usepackage{url}
+\usepackage{layout}
+
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+
+\newcommand{\pr}{\mathbb{P}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\begin{document}
+
+\input{./title.tex}
+
+\tableofcontents
+
+\chapter{Some Basic Stochastic Processes}
+
+\input{./processes.tex}
+
+\chapter{Potential Modelling Techniques}
+
+\input{./techniques.tex}
+
+\begin{thebibliography}{9}
+
+\bibitem{doob96}
+	The Development of Rigor in Mathematical Probability (1900-1950)
+
+	Joseph L. Doob
+
+	The American Mathematical Monthly, Vol. 103, No. 7 (Aug. - Sep., 1996), pp. 586-595
+
+	\url{http://www.jstor.org/stable/2974673}
+
+\bibitem{mwmarkov}
+	Weisstein, Eric W. "Markov Chain." From MathWorld--A Wolfram Web Resource. 
+
+	\url{http://mathworld.wolfram.com/MarkovChain.html}
+\bibitem{mwgraph}
+	Weisstein, Eric W. "Graph." From MathWorld--A Wolfram Web Resource. 
+	
+	\url{http://mathworld.wolfram.com/Graph.html}
+
+\end{thebibliography}
+
+\end{document}
