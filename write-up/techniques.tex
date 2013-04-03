@@ -9,8 +9,8 @@ The simplest place to start is with a non-homogeneous poisson process. We assume
 $$
 \lambda(t) = 
 \begin{cases}
-5  \mbox{for} 0  \leqslant t < 30
-10 \mbox{for} 30 \leqslant t < 50
+5  \mbox{for} 0  \leqslant t < 30\\
+10 \mbox{for} 30 \leqslant t < 50\\
 5  \mbox{for} 50 \leqslant t < 100
 \end{cases}
 $$
@@ -23,9 +23,9 @@ We can fit a step function by taking the differences in emission times, then att
 
 %Diagram here
 
-But if we try something more complex, eg $\lambda(t) = 5+5sin(t)$, we have some issues. This is a very high-rate process which generates a lot of data with each trace. With 100 traces, giving us roughly 3,000 data points, our clustering starts to fail after just 4 rates. We could instead attempt to fit a polynomial function, but a smooth is subject to one very large problem with twitter data.
+But if we try something more complex, eg $\lambda(t) = 5+5sin(t)$, we have some issues. This is a very high-rate process which generates a lot of data with each trace. With 100 traces, giving us roughly 3,000 data points, our clustering starts to fail after just 4 rates.
 
-Humans don't behave in a smooth manner. Our usage of twitter throughout a day does not vary along some continuum, and has some odd properties. See the following trace of a single day;
+We could instead attempt to fit a polynomial function, but a smooth function is subject to one very large problem with twitter data. Humans don't behave in a smooth manner. Our usage of twitter throughout a day does not vary along some continuum, and has some odd properties. See the following trace of a single day;
 
 % Trace of one day, showing bursts
 
@@ -43,12 +43,42 @@ The Markov-Modulated Poisson Process (MMPP) is a particularly devious form of Hi
 
 %MMPP Simulation algorithm goes here
 
-Several people have postulated that such a model would be ideal for simulating human behavior %lots of citations go here
-but there have so far been no actual studies of its relevance. Part of the reason for this is due to the lack of algorithms.
+Such a model seems ideal, capturing the simplicity of a step function, and letting us model the idea of randomly distributed bursts throughout a day. Indeed, several authors have postulated that such a model would be ideal for simulating human behavior %lots of citations go here
+but there have so far been no actual quantifiable studies of its relevance. Part of the reason for this is likely the lack of algorithms.
 
 Fitting a Hiddin Markov Model of any kind relies on two main algorithms, Baum-Welch %cite
 and Viterbi
 %cite
-. The Baum-Welch Algorithm is an expenctation-maximisation algorithm for finding the transition probabilities/rates and the emission probabilities, given a set of possible emissions, a number of states to fit and an observed sequence of emissions. Viterbi will take an observed sequence of emissions and the parameters of an HMM, and produce the most likely state in which each of these emissions happened.
+. The Baum-Welch Algorithm is an expectation-maximisation algorithm for finding the transition probabilities/rates and the emission probabilities, given a set of possible emissions, a number of states to fit and an observed sequence of emissions. Viterbi will take an observed sequence of emissions and the parameters of an HMM, and produce the most likely state in which each of these emissions happened. The HiddenMarkov package hosted on CRAN %cite
+is the only easily-accessible Hidden Markov Model package which supports the Markov Modulated Poisson Process, but does not contain any implementation of the Viterbi algorithm. It therefore became necessary to write one.
+
+The Viterbi algorithm for a standard Discrete Time Hidden Markov Model relies on a known, finite observation space $O$, a known distribution on $O$ for each state $s$, $p_s$, and known transition probabilities $\pi_i,j$, with known initial probabilities for each state $s$, $\delta_s$. We let $[k] = \{1,2,...,k\}$. The goal is, given a sequence of T observations $(y_n)_{n \in [T]}$, $y_i \in O$, to find the sequence of states $(x_n)_{n \in [T]}$ satisfying
+
+$$
+\mathbf{x} = \argmax_{\widehat{\mathbf{x}} \in S^T} \pr(\mathbf{\widehat{x}} | \mathbf{y})
+$$
+
+We let $V_{t,s}$ be the probability of the most probable state sequence responsible for the first $t$ observations which ends in state $s$ %cite http://www.cs.cmu.edu/~epxing/Class/10701/Lecture/lecture12-HMM.pdf
+. We have that $V_{1,s}$ is the probability of both being in state $s$ at time 1 and seeing observation $y_1$ from state $s$. A simple application of Bayes' Rule gives us that
+
+$$
+V_{1,s} = \pr (y_1|s)\pr(x_1=s)
+$$
+
+Recall that $\delta_s$ is the probability of being in state $s$ at time 1, ie $\pr(x_1=s)$, and that $p_s(y_1)$ is the probability of observing $y_1$ from state $s$, ie $\pr (y_1|s)$. Both of these parameters are estimated by the Baum-Welch algorithm, hence,
+
+$$
+V_{1,s} = p_s(y_1)\delta_s
+$$
+
+Given $V_{\tau,s}$ for $\tau < t$, we can find $V_{t,s}$ by noting that the Markov Property implies a form of memorylessness. Given the present, the future is conditionally independent of the past. As such, we need only consider $V_{t-1,s}$ for each $s$, as well as our known parameters. 
+
+The probability of the most likely path that leads us to state $s$ at time $t$ is given by the probability of the most likely path that lead us to $s'$ at time $t-1$, and then jumped to $s$ at time $t$, and then emitted $y_t$ from state $s$. The probability of jumping from $s'$ to $s$ is $\pi_{s',s}$. The probability of emitting $y_t$ from state $s$ is $p_s(y_t)$. The probability of the most likely path that leads us to $s'$ at time $t-1$ is $V_{t-1,s'}$. Hence,
+
+$$
+V_{t,s} = p_s(y_t) \max_{s'\in S} (\pi_{s',s}V_{t-1,s'})
+$$
+
+Using this recurrence, we can find $V_{t,s} \forall t \in [T]$. 
 
 \section{The Markov-Modulated Generalised Time Process}
