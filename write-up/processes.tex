@@ -64,11 +64,9 @@ Since this process is no longer Markovian, it makes little sense to attempt to g
 
 The Hidden Markov Model is an extention of the Markov Chain used for fitting various stochastic models.
 
-With discrete time and state space, rather than having a directly observable Markov Chain, we assume that the process we observe has an underlying unobservable Markov Chain. We then define an observation space $O$, and a probability distrubtion, $p$, on $S \times O$. Before jumping out of state $i$, the Markov Chain emits observation $o$ with probability $p(i,o)$.
+With discrete time and state space, rather than having a directly observable Markov Chain, we assume that the process we observe has an underlying unobservable Markov Chain. We then define an observation space $O$, and a set of probability distrubtions, $\{p_s | s \in S\}$. Before jumping out of state $s$, the Markov Chain emits observation $o$ with probability $p_s(o)$. Alternatively, we can define a continuous $O$ with probability densities instead of a probability distribution.
 
 The traditional example is that of the ``unfair casino". Imagine the dealer at the casino has two six-sided dice. Die one is fair, but die two is weighted such that it never shows a $6$, and shows the numbers 1 to 5 with equal probabilities. The dealer will clandestinely swap the dice with probability $0.1$ before rolling. Here, our state space is $\{1,2\}$ and our observation space is $\{1,2,3,4,5,6\}$. We can represent this as follows;
 %POOT DIAGRAM HERE
 
-We can only observe the results of the dice rolls, but what we're interested in is the underlying model. Firstly, we want to know what die the dealer is likely to be using at any given time - if I've seen the dealer roll a 6, I know he was using the fair die then, so he will use the fair die again with probability $0.9$, for example. Further to this, suppose we didn't know the above parameters. We also want to estimate them - how many dice does the casino have, how does the dealer swap them, how do these dice roll?
-
-These questions wil be discussed later on.
+We can only observe the results of the dice rolls, but what we're interested in is the underlying model. Firstly, we want to know what die the dealer is likely to be using at any given time - if I've seen the dealer roll a 6, I know he was using the fair die then, so he will use the fair die again with probability $0.9$, for example. Further to this, suppose we didn't know the above parameters in advance. We may also want to estimate them from observations in some way.
