@@ -99,7 +99,7 @@ Since we have an expression for $x_{t-1}$ in terms of $x_t$, and for $x_T$, we c
 
 %Put algorithm here
 
-\subsection{A Modification of the Viterbi Algorithm for the Markov-Modulated Poisson Process}
+\subsection{A First Approximation of the Viterbi Algorithm for the Markov-Modulated Poisson Process}
 
 Recall the dependencies for the DTHMM Viterbi Algorithm. We require knowledge of a finite $O$, $p_s$ for each $s$, and $\pi_{ij}$ for each pair of states $i,j$.
 
@@ -108,8 +108,6 @@ In an MMPP, we observe a Poisson Process of rate randomly varying between variou
 The state space $S$ and transition rates $Q$ are estimated by the Baum Welch algorithm as before, so after running Baum Welch over an observed trace, we can start to find the most likey state at each emission. Note that this ``Viterbi Path" is not the most likely sequence of state transitions, it is instead the most likely state in which the underlying CTMP resides at the time of each emission. This quirk is discussed in %APPENDIX REF
 
 Since our emissions are continuous, we don't have any notion of ``most probable" - if we model height continuously, the probability that I meet someone exactly 1.8m tall is the same as the probability that I meet someone exactly 18m tall, they're both 0 - so instead we'll base our likelihood calculations off probability density - capturing the idea that, even though I don't know for certain that I'll meet one of the two, it's more likely for me to meet the 1.8m tall person.
-
-% NOPENOPENOPENOPENOPENOPENOPENOPENOPENOPENOPENOPENOPENOPENOPE
 
 We let $p_s(t)= \lambda_s e^{-t\lambda_s}$, the probability density of an exponential random varaible of rate $\lambda_s$ evaluated at $t$. Let $V_{t,s}$ be the probability density of the most likely path that leads us to emitting $y_t$ from state $s$. We have that
 
@@ -127,6 +125,8 @@ The probability density of the most likely path that leads us to waiting for tim
 
 From here, we can proceed as normal. We define $T$ as before to record our most likely states at each transition, and work backwards to find $\mathbf{x}$.
 
-Interesting to note here is the fact that the algorithm assumes that either a jump happens instantaneously, or not at all - we always evaluate $p_s(y_t)$, rather than $p_s(y_t-\varepsilon)$, where $\varepsilon$ represents the time we wait for all the relevant transitions to occur. However, the times between state transitions are exponentially distributed, and we are dealing with the most likely outcomes. The most likely outcome of any exponential distribution is $0$ so, if the underlying CTMP jumps from one state to another, the most likely time for that jump to happen is immediately, so $\varepsilon = 0$
+The reason that this is an approximation is the fact that the algorithm assumes that either a jump happens instantaneously, or not at all - we always evaluate $p_s(y_t)$, rather than $p_s(y_t-\tengt)$, where $\tengt$ represents the time we wait for all the relevant transitions to occur. The times between state transitions are exponentially distributed, and we are dealing with the most likely outcomes. The most likely outcome of any exponential distribution is $0$ so, if the underlying CTMP jumps from one state to another, the most likely time for that jump to happen is immediately, so $\tengt = 0$. If multiple jumps happen, their individual times are exponentially distributed, but their sum does not have a mode of 0.
+
+This first approximation is valid in this situation if we know that the tweeter rarely traverses multiple states between emissions, alternatively the probability of traversing twice without emitting is low. We can quantify this once a model has been estimated.
 
 \section{The Markov-Modulated Generalised Time Process}
