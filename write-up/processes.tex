@@ -4,7 +4,7 @@
 
 A stochastic process \cite[p590]{doob96} is a collection $\{X_t  | t \in T\}$ (sometimes $X(t)$ for continuous $T$) of random variables. These collections may be indexed arbitrarily, but tend to be used to describe the evolution of some random series of events, using $T$ to be some representation of either discrete or continuous time, for instance $X_t$ may be the number of observed emissions from a radioactive source after $t$ minutes or the lisence plate of the $t^{th}$ car to go past a speed camera.
 
-For Markov Chains, we usually set $T=\{0,1,2,...\}=\mathbb{N}$ or $T =\{x | x \geqslant 0 \} = \mathbb{R}^{+}$. If $T=\mathbb{N}$ and each $X_t$ is a discrete random variable over the set $S$, then we say that $X$ obeys the Markov Property iff
+A Markov Chain is a stochastic process with a particular property. We usually set $T=\{0,1,2,...\}=\mathbb{N}$ or $T =\{x | x \geqslant 0 \} = \mathbb{R}^{+}$. If $T=\mathbb{N}$ and each $X_t$ is a discrete random variable over the set $S$, then we say that $(X_t)_{t \in \mathbb{N}}$ obeys the Markov Property iff
 
 $$
 \forall t \in T, s \in S \quad \pr (X_{t+1} = s | X_0, X_1, ... X_t) = \pr (X_{t+1} = s | X_t)\cite{mwmarkov}
@@ -19,6 +19,14 @@ $$
 If a stochastic process obeys the Markov Property, then we say that it is a Markov Chain. If a stochastic process obeys the continuous analogue to the Markov Property, then it is referred to as a Continuous Time Markov Process (CTMP). We refer to $S$ as the state-space, each $s \in S$ is a state, and $X_t$ represents the state at time t. We usually write the Markov Property as ``given the present, the future is conditionally independent of the past" \cite{mwmarkov}.
 %COVER THIS IN G&S CITATIONS
 
+We'll be dealing exclusively with discrete Markov Chains in this project, ie a Markov Chain where $S$ is discrete. In most cases, $S \subseteq \mathbb{Z}$, though our states can be integers, real numbers, popes, or any other completely arbitrary non-empty set. Where $S$ is discrete, we define $\mathbf{\delta} = (\delta_i)_{i \in S}$, the initial probability vector, and $\Pi = (\pi_{ij})_{(i,j) \in S^2}$, the matrix of transition probabilities, such that.
+\begin{align*}
+\delta_i &= \pr (X_0 = i) \\
+\pi_{ij} &= \pr(X_{t+1} = j | X_t = i) \forall t \in \mathbb{N}
+\end{align*}
+
+Every discrete-state Markov Chain with $T=\mathbb{N}$ can be uniquley defined by the triple $(S,\delta,\Pi)$.
+
 For CTMPs, we usually define the transition rate matrix $Q$ such that
 
 $$
@@ -31,13 +39,40 @@ $$
 \forall i,j \in S, \delta>0 \quad \pr (X(t+\delta)=j|X(t)=i) = (e^{\delta Q})_{ij}
 $$
 
-That is, the $i,j^{th}$ element of the matrix exponential of $\delta Q$.
+That is, the $i,j^{th}$ element of the matrix exponential of $\delta Q$. With the initial probability vector $\delta$ defined as before, we can uniquely define any CTMP with the triple $(S,\delta,Q)$.
 
 \subsection{An Intuitive Interpretation}
 
-Whilst the above defines Markovian Processes, it fails to describe them in any intuitive way. Before attempting to use them, it is important to be able to deal with both the continuous and discrete-time Markov Chains in an intuitive way. My personal preferred method is to use edge-weighted directed graphs\cite{mwgraph}. Each state in $S$ is given a node in the graph, and for each $i,j \in S$ the edge $(i,j)$ is given weight $p_{ij}$ in the discrete case and $q_{ij}$ in the continuous case.
+Whilst the above defines Markovian Processes, it fails to describe them in any intuitive way. Before attempting to use them, it is important to be able to deal with both the continuous and discrete-time Markov Chains in an intuitive way. My personal preferred method is to use edge-weighted directed graphs\cite{mwgraph}. Each state in $S$ is given a node in the graph, and for each $i,j \in S$ the edge $(i,j)$ is given weight $\pi_{ij}$ in the discrete case and $q_{ij}$ in the continuous case.
 
-%EXAMPLE
+As an example, let's use the following definitions, with $\delta$ and $\Pi$ indexed in the order the elements of $S$ are written;
+
+\begin{align*}
+S &= \{\mbox{John Paul II}, \mbox{Avian I}\}\\
+\delta &= \left(1,0\right)\\
+\Pi &=
+\left(
+\begin{matrix}
+0.3&0.7\\
+0.7&0.3
+\end{matrix}
+\right)
+\end{align*}
+
+This defines a Discrete Time Markov Chain with the following graph:
+
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.5cm]
+  \node[state]         (r)                     {JP2};
+  \node[state]         (b)  [right of = r]     {A1};
+
+  \path  (r) edge[loop left]   node {$0.3$} (r)
+         ([yshift=1ex]r.east) edge node {$0.7$} ([yshift=1ex]b.west)
+
+         (b) edge[loop right]   node {$0.1$} (b)
+         ([yshift=-1ex]b.west)edge node {$0.9$} ([yshift=-1ex]r.east)
+
+  ;
+\end{tikzpicture}
 
 We can then say that a discrete Markov Chain will hop from node to node at each time step with probabilities defined by the weights of the edges between the current node and its neighbors. A CTMP is slightly more complex; on arriving in a state $i$, all neighboring states $j$ generate a random time $T_j ~ Exp(q_{ij})$. We let $k = \argmin_{j\in S} T_j$, and say that the CTMP will remain in state $i$ for $T_k$ units of time, then jump to state $k$.
 
