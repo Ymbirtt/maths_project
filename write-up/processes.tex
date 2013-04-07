@@ -78,14 +78,40 @@ We can then say that a discrete Markov Chain will hop from node to node at each 
 
 \subsection{The Poisson Process}
 
-The simplest form of CTMP is the homogeneous Poisson Process, where $S = \mathbb{N}$ and $\forall i \in S, q_{ii}=-\lambda, q_{i,i+1} = \lambda$. We call $\lambda$ the rate of this process. If N(t) is a Poisson process, we then have that
+The simplest form of CTMP is the homogeneous Poisson Process, where $S = \mathbb{N}$ and $\forall i \in S, q_{ii}=-\lambda, q_{i,i+1} = \lambda$. We call $\lambda$ the rate of this process. If $N(t)$ is a Poisson process, we then have that
 
 $$
-\forall i \in \mathbb{N}, t,\delta \in \mathbb{R}^{+}, \pr (N(t+\delta) = i+1 | N(t) = i) = \lambda \delta + o(\delta)
+\forall i \in \mathbb{N}, t,\varepsilon \in \mathbb{R}^{+}, \pr (N(t+\varepsilon) = i+1 | N(t) = i) = \lambda \varepsilon + o(\varepsilon)
 $$
 
 The graph for this process is similarly simple
 %poot graph here
+
+Implicit from this, we see that the process can only increase - once leaving a state, we never return, so we can define the emission times $t_n$, as $t_n = \min\{t | N(t)\geqslant n\}$. We can also define $\tau_n = t_n-t_{n-1}$, the inter-arrival times for the $n^{th}$ jump for $n \{1,2,...\}$. We refer to these as emissions and arrivals since a Poisson Process generally models a counting process, whereby we record the times at which we observe things happening, eg the times at which radioactive particles are detected from a radioactive material.
+
+From the properties of a CTMP, it is clear to see that $\tau_n \sim Exp(\lambda)$, meaning that a poisson process can be simulated by a rather simple algorithm.
+
+\begin{algorithm}
+\SetAlgoLined
+\SetKwInOut{Input}{input}
+\SetKwInOut{Output}{output}
+
+\caption{An Approximate Viterbi Algorithm for MMPPs}
+\Input{$\lambda$, a poisson process rate and $T$, a maximum time for which to simulate}
+\Output{$\mathbf{t}$, a Poisson process of rate $\lambda$ terminating before time $T$}
+
+\Begin{
+	$t_0 <- 0$\\
+	$n <- 0$\\
+	\While{$t_n<T$}{
+		$n <- n+1$\\
+		$\tau <- Exp(\lambda)$ \tcc{tau takes on an exponentially distributed 
+									random value}
+		$t_n <- t_{n-1} + \tau$
+	}
+	\KwRet $(t_0,...,t_{n-1})$
+}
+\end{algorithm}
 
 We can also sacrifice the Markov Property to define an inhomogeneous poisson process. Everything remains from before, except rather than having a rate parameter $\lambda \in \mathbb{R}^{+}$, we have a rate function $\lambda : \mathbb{R}^{+} -> \mathbb{R}^{+}$, where
 
@@ -93,7 +119,7 @@ $$
 \forall i \in \mathbb{N}, t,\delta \in \mathbb{R}^{+}, \pr (N(t+\delta) = i+1 | N(t) = i) = \lambda(t) \delta + o(\delta)
 $$
 
-Since this process is no longer Markovian, it makes little sense to attempt to graph it, however it remains a powerful tool.
+Since this process is no longer Markovian, it makes little sense to draw its graph, however it remains a powerful tool.
 
 \section{Hidden Markov Models}
 
