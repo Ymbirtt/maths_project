@@ -177,10 +177,25 @@ Then use the Bayesian Information Criterion to note that the optimal number of s
 
 And finally perform some new KS tests to find that...
 
-%Results of KS test
+% Results of KS test
 
 The data cannot be well-clustered into a small number of exponentially distributed subsets. We can then conclude that these data do not follow any kind of simple poisson process, in spite of appearances.
 
 \section{A Zoo of Problems}
 
-\section{The Markov-Modulated Generalised Time Process}
+Whilst this gives a fairly strong negative result that this tweeter is not a poisson process, it doesn't give any real explanation as to why. For that, we need to start looking at the actual emissions given in each state. For starters, let's go back to the MMPP fitted with my modified Viterbi algorithm, and inspect the values assigned to each state.
+
+% Density graphs here
+
+So we see that, whilst an exponential distribution seems valid for the low end of the distribution, the tail seems somewhat heavier. The means and standard deviations are equal, as expected from an exponential distribution, but the density is off by a significant margin, which is why the KS tests were failing. We see something similar for a DTHMM with exponential emissions, and the problem persists;
+
+% More density graphs
+
+Indeed, on inspection, the observed emissions within each state seem closer to a lognormal distribution. If $X$ follows a lognormal distribution, then $\log(X)$ follows a normal distribution %cite mathworld
+. Plotting a lognormal density curve alongside the observed curve, we see a somewhat closer fit, even though these data were fitted to an exponential distribution.
+
+Summing lognormal distributions into some stochastic process in the same way that we sum exponential distributions into a poisson process carries all manner of problems, however. The lognormal distribution is not memoryless, so the resulting process will be non-markovian, meaning that simple fitting algorithms like Baum-Welch and Viterbi require much more sophisticated modifications to work correctly.
+
+We can, however, fit a discrete model to the data using a DTHMM with lognormal emissions, so let's do that.
+
+%Results go here
