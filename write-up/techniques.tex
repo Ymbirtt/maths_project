@@ -85,19 +85,45 @@ $$
 
 Using this recurrence, we can find $V_{t,s} \forall t \in [T]$ by a standard dynamic programming algorithm.
 
-From here, we can then work backwards to find the Viterbi path. $x_T = \argmax_{s \in S} V_{s,t}$ - the most likely final state is the state in which the path of maximum probability ends.
+From here, we can then work backwards to find the Viterbi path. $x_T = \argmax_{s \in S} V_{t,s}$ - the most likely final state is the state in which the path of maximum probability ends.
 
 Let
  
 $$
-T_{s,t} = \argmax_{s'\in S}(\pi_{s',s}V_{t-1,s'})
+T_{t,s} = \argmax_{s'\in S}(\pi_{s',s}V_{t-1,s'})
 $$
 
-Ie, $T_{s,t}$ is the state from which we are most likely to have come at time $t-1$ given that we are in state $s$ at time $t$, we can then see that $x_{t-1} = T{x_t,t}$. Note the similarities in the definitions of $V$ and $T$ - both can be calculated simultaneously - $V$ is the maximum, $T$ is the argument that maximises. $T_{s,1}$ is never used, so need never be defined. 
+Ie, $T_{t,s}$ is the state from which we are most likely to have come at time $t-1$ given that we are in state $s$ at time $t$, we can then see that $x_{t-1} = T{x_t,t}$. Note the similarities in the definitions of $V$ and $T$ - both can be calculated simultaneously - $V$ is the maximum, $T$ is the argument that maximises. $T_{1,s}$ is never used, so need never be defined. 
 
 Since we have an expression for $x_{t-1}$ in terms of $x_t$, and for $x_T$, we can then recover $\mathbf{x}$, the Viterbi Path. We can therefore define the viterbi algorithm as follows:
 
-%Put algorithm here
+\begin{algorithm}
+\SetAlgoLined
+\SetKwInOut{Input}{input}
+\SetKwInOut{Output}{output}
+
+\caption{The Viterbi Algorithm for DTHMMs}
+\KwData{$(S,\delta,\Pi,O,p)$, a DTHMM}
+\Input{$\mathbf{y}$, an observed sequence of $T$ emissions, indexed from $1$ to $T$}
+\Output{$\mathbf{x}$, the most likely sequence of states generating these emissions}
+
+\Begin{
+	\For{$s \in S$}{
+		$V_{1,s} <- p_s(y_1)\delta_s$
+	}
+	\For{$t \leftarrow 2$ \KwTo $T$}{
+		\For{$s \in S$}{
+			$V_{t,s} <- p_s(y_t) \max_{s' \in S}(\pi_{s',s}V_{t-1,s'})$ \\
+			$T_{t,s} <- \argmax_{s' \in S}(\pi_{s',s}V_{t-1,s'})$
+		}
+	}
+	$x_T <- \argmax_{s' \in S}(V_{s',T})$\\
+	\For{$t \leftarrow T$ \KwTo $2$}{
+		$x_{t-1} <- T_{x_t,t}$
+	}
+	\KwRet{$\mathbf{x}$}
+}
+\end{algorithm}
 
 \subsection{A First Approximation of the Viterbi Algorithm for the Markov-Modulated Poisson Process}
 
@@ -125,7 +151,38 @@ The probability density of the most likely path that leads us to waiting for tim
 
 From here, we can proceed as normal. We define $T$ as before to record our most likely states at each transition, and work backwards to find $\mathbf{x}$, producing the following algorithm
 
-%ALGORITHM GOES HERE
+\begin{algorithm}
+\SetAlgoLined
+\SetKwInOut{Input}{input}
+\SetKwInOut{Output}{output}
+
+\caption{An Approximate Viterbi Algorithm for MMPPs}
+\KwData{$(S,\delta,Q,p)$, an MMPP}
+\Input{$\mathbf{y}$, the absolute times of an observed sequence of $T$ emissions, indexed from $1$ to $T$}
+\Output{$\mathbf{x}$, the most likely sequence states in which the underlying CTMP resides for each emission in $\mathbf{y}$}
+
+\Begin{
+	\For{$t <- 2$ \KwTo $T$}{
+		$\tau_{t-1} <- y_t-y_{t-1}$
+	}
+	$T <- T-1$
+	\For{$s \in S$}{
+		$V_{1,s} <- p_s(t_1)\delta_s$
+	}
+	\For{$t \leftarrow 2$ \KwTo $T$}{
+		A <- $e^{Q\tau_t}$
+		\For{$s \in S$}{
+			$V_{t,s} <- p_s(\tau_t) \max_{s' \in S}(A_{s',s}V_{t-1,s'})$ \\
+			$T_{t,s} <- \argmax_{s' \in S}(A_{s',s}V_{t-1,s'})$
+		}
+	}
+	$x_T <- \argmax_{s' \in S}(V_{s',T})$\\
+	\For{$t \leftarrow T$ \KwTo $2$}{
+		$x_{t-1} <- T_{x_t,t}$
+	}
+	\KwRet{$\mathbf{x}$}
+}
+\end{algorithm}
 
 The reason that this is an approximation is the fact that the algorithm assumes that either a jump happens instantaneously, or not at all - we always evaluate $p_s(y_t)$, rather than $p_s(y_t-\tengt)$\footnote{\tengt - tinco - represents the voiceless alveolar stop in the Tengwar alphabet, as devised by JRR Tolkein. When dealing with time so frequently, we eventually run out of ways to write the letter t}, where $\tengt$ represents the time we wait for all the relevant transitions to occur. The times between state transitions are exponentially distributed, and we are dealing with the most likely outcomes. The most likely outcome of any exponential distribution is $0$ so, if the underlying CTMP jumps from one state to another, the most likely time for that jump to happen is immediately, so $\tengt = 0$. If multiple jumps happen, their individual times are exponentially distributed, but their sum does not have a mode of 0.
 
