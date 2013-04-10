@@ -1,5 +1,10 @@
 Check mmpp model is in fact valid - look at differences in times between events in each state, plot histogram, put exponential graph on top of it
 
+Test results with more iterations of Baum-Welch (steal BlueCrystal, run on
+Jormungandr, leave it overnight), and try more states (15?)
+
 Stratify by day of week, look at data, average per day, histograms, etc etc
 
 Fit markov model to weekdays and weekends, look for massive parameter differences
+
+Two-sample Kolmogorov - Smirnov test on Monday vs Tue-Sun, Tue vs Mon, Wed-Sun, etc
