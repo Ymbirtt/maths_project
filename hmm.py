@@ -262,6 +262,7 @@ model = fitmmpp(process,3)
 plotPoisson(process)
 shadeStates(ts)
 xlim(0,10000)
+savefig("./write-up/images/trace_mmpp1.svg")
 show()
 V = r['Viterbi'](model)
 r['print'](model)
@@ -272,6 +273,7 @@ print V
 xlim(0,10000)
 shadeStates(zip(process,list(V)))
 print "done!"
+savefig("./write-up/images/fit_mmpp1.svg")
 show()
 print "Reading data..."
 
