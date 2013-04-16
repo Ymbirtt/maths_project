@@ -30,7 +30,7 @@ def poisson(lamb, t0, tmax):
         return []
 
 def shadeStates(xs):
-    colours = {1:'r',2:'y'  ,3:'g', 4:'c', 5:'k'}
+    colours = {1:'r',2:'y'  ,3:'g', 4:'c', 5:'k', 0:'b', 0.5:'r', 0.01:'g'}
     ys = []
 
     for x in xs:
@@ -224,11 +224,11 @@ def testGoodness(ts,ss,model):
 ############################################################
 print "Doing nothing of any importance..."
 
-states = (0,0.5,2)
+states = (0.01,0.5,2)
 rates  = {
-0  : {0.5: 1/60, 2:1/30},
-0.5: {0: 1/10,   2:1/30},
-2  : {0: 1/10, 0.5:1/60}
+0.01  : {0.5: 1/60, 2:1/30},
+0.5: {0.01: 1/10,   2:1/30},
+2  : {0.01: 1/10, 0.5:1/60}
 }
 
 
@@ -253,12 +253,20 @@ for _ in range(sims):
         state = ss[i]
         ts.append((t,state))
 
-#model = fitmmpp(process,3)
-#plotPoisson(process[:100])
-#shadeStates([(x,y) for (x,y) in ts if x<process[100]])
-#show()
-#r['print'](model)
-#V = r['Viterbi'](model)
+process = process[:3333]
+model = fitmmpp(process,3)
+plotPoisson(process)
+shadeStates(ts[:3333])
+show()
+V = r['Viterbi'](model)
+r['print'](model)
+raw_input()
+plotPoisson(process)
+print "shading states"
+print V
+shadeStates(zip(process,list(V))[:3333])
+print "done!"
+show()
 print "Reading data..."
 
 tau = getDates("./twitterextract")
