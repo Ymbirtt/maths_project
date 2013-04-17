@@ -31,14 +31,10 @@ def poisson(lamb, t0, tmax):
 
 def shadeStates(xs):
     colours = {1:'r',2:'y'  ,3:'g', 4:'c', 5:'k', 0:'b', 0.5:'r', 0.01:'g'}
-    ys = []
-
-    for x in xs:
-        ys.append(x)
-        fst = x[1]
-        xs = dropwhile(lambda (x,y):y==fst,xs)
-
+    ys = xs
+    
     for n in range(1,len(ys)):
+        print "shading ", n 
         axvspan(ys[n-1][0],ys[n][0],facecolor=colours[ys[n-1][1]],alpha=0.25,lw=0)
 
 def plotPoisson(xs, args=''):
