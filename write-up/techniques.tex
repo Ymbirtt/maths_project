@@ -220,12 +220,12 @@ Because the expected course of an MMPP is somewhat harder to calculate, this one
 Running the Baum-Welch algorithm over the trace with a known state size of 3 for 208 iterations, at which the model converged sufficiently, gives us the following predictions, rounded to 2 significant figures;
 
 \begin{align*}
-(\lambda_1,\lambda_2,\lambda_3) &= (0.0095,0.50,1.99)\\
+(\lambda_1,\lambda_2,\lambda_3) &= (0.0066,0.53,2.00)\\
 S &= \{\lambda_1,\lambda_2,\lambda_3\}\\
 Q &= \bordermatrix{      & \lambda_1 & \lambda_2 & \lambda_3\cr
-                \lambda_1 & -0.062 & 0.028 & 0.034 \cr
-                \lambda_2 & 0.087 & -0.10 & 0.053 \cr
-                \lambda_3 & 0.083 & 0.025 & -0.11 \cr
+                \lambda_1 & -0.061 & 0.022 & 0.039 \cr
+                \lambda_2 & 0.10 & -0.14 & 0.053 \cr
+                \lambda_3 & 0.094 & 0.020 & -0.11 \cr
 			}\\
 \delta &= (1.00,0.00,0.00)
 \end{align*}
@@ -238,7 +238,8 @@ Comparing the estimated path to the original in a way that clearly displays the 
 %gimp.org
 %http://docs.gimp.org/en/gimp-concepts-layer-modes.html
 . Any black pixels are locations where the original two images match perfectly, all others are mistakes %diagram goes somewhere near here
-. Applying a threshold to split the image into pure black and white, then counting up all the black pixels will tell us how accurate we really were. 3,453 of the 3869 pixels were black, giving us an accuracy of 89.2\%. Given the inaccuracy of one of the Baum-Welch predicted states, I found this accuracy impressively high.
+. The plot in figure %whatever
+is 89.2\% black, so my estimated model matches the simulation 89.2\% of the time. Given the inaccuracy of $\lambda_1$'s estimate from the Baum-Welch algorithm, I found this accuracy impressively high.
 
 %diagram
 
@@ -300,7 +301,7 @@ Unfortunately, the Kolmogorov-Smirnov tests still fail - the greatest p-value fo
 
 From this point, it is starting to seem like the tweeter does not follow an MMPP, but there is one last thing we can attempt in this vein. A DTHMM can still have a continuous observation space and all the previous methods will work, just with probability density in place of probability. Rather than observing a series of times, we will instead observe a series of time differences, and look for any small number of states that lets us gather these differences into the same exponential distribution. The results from such a model will be similar, but lose some information about how long our tweeter actually spends in each state. The crucial difference between the two is that in an MMPP emissions and transitions take place along the same timeline - compare the Viterbi algorithms for both the MMPP and DTHMM, and note that the transition probabilities between a DTHMM's states do not depend on the observed emissions, whilst the transition probabilities in the MMPP version do.
 
-So we go through the same procedure again - the intuitive 3 states didn't result in anything worthwhile
+So we go through the same procedure again - the intuitive 3 states didn't result in anything worthwhile, so we apply the old BIC test again again arrive at an optimum of 5 states and a BIC of 1446 
 
 % Stuff goes here
 
@@ -308,11 +309,9 @@ Then use the Bayesian Information Criterion to note that the optimal number of s
 
 % More stuff here
 
-And finally perform some new KS tests to find that...
+And finally perform some new KS tests to find one p-value of 0.03, and four others below $10^{-7}$.
 
-% Results of KS test
-
-The data cannot be well-clustered into a small number of exponentially distributed subsets. We can then conclude that these data do not follow any kind of simple poisson process, in spite of appearances.
+From this, we can definitively conclude that the data cannot be well-clustered into a small number of exponentially distributed subsets. We can then conclude that these data do not follow any kind of simple poisson process, in spite of appearances.
 
 \section{A Zoo of Problems}
 
@@ -324,8 +323,8 @@ So we see that, whilst an exponential distribution seems valid for the low end o
 
 % More density graphs
 
-Indeed, on inspection, the observed emissions within each state seem closer to a lognormal distribution. If $X$ follows a lognormal distribution, then $\log(X)$ follows a normal distribution %cite mathworld
-. Plotting a lognormal density curve alongside the observed curve, we see a somewhat closer fit, even though these data were fitted to an exponential distribution.
+Indeed, on inspection, the observed emissions within each state seem closer to a lognormal distribution - if $X$ follows a lognormal distribution, then $\log(X)$ follows a normal distribution %cite mathworld
+. Plotting a lognormal density curve alongside the observed curve, we see a somewhat closer fit, even though we attempted to fit these data to an exponential distribution
 
 Summing lognormal distributions into some stochastic process in the same way that we sum exponential distributions into a poisson process carries all manner of problems, however. The lognormal distribution is not memoryless, so the resulting process will be non-markovian, meaning that simple fitting algorithms like Baum-Welch and Viterbi require much more sophisticated modifications to work correctly.
 
