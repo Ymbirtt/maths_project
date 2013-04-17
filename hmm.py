@@ -61,6 +61,7 @@ def plotPoisson2D(xs):
     xlabel("Hour")
     ylabel("Day")
     xlim(0,24)
+    ylim(min(days),max(days))
 
 def shadeStates2D(xs,states):
     """Given a list of times and states at each time, shades in the states at
@@ -75,10 +76,17 @@ def shadeStates2D(xs,states):
 
     for n in range(1,len(days)-1):
         if days[n-1]==days[n]:
+            #Shade in the area between these two states
             gca().add_patch(Rectangle((xs[n-1],days[n]-0.5),xs[n]-xs[n-1],1,alpha=0.5,color=colours[states[n-1]],linewidth=0))
-        else:
+        elif days[n]-days[n-1]==1:
+            #shade in the area from this state to the end of the day, then from the start of the next to the next day
             gca().add_patch(Rectangle((xs[n-1],days[n-1]-0.5),24-xs[n-1],1,alpha=0.5,color=colours[states[n-1]],linewidth=0))
             gca().add_patch(Rectangle((0,days[n]-0.5),xs[n],1,alpha=0.5,color=colours[states[n-1]],linewidth=0))
+        else:
+            #shade in the area from this state to the end of the day, then from the start of the next to the next day
+            gca().add_patch(Rectangle((xs[n-1],days[n-1]-0.5),24-xs[n-1],1,alpha=0.5,color=colours[states[n-1]],linewidth=0))
+            gca().add_patch(Rectangle((0,days[n]-0.5),xs[n],1,alpha=0.5,color=colours[states[n-1]],linewidth=0))
+            gca().add_patch(Rectangle((0,days[n-1]+0.5),24,days[n]-days[n-1]-2,alpha=0.5,color=colours[states[n-1]],linewidth=0))
 
 
 def fitmmpp(tau, states = -1, maxiters = 500):
@@ -181,11 +189,11 @@ def malleate(tau):
     tau.sort()
 
     #The first few results seem to be outliers - let's lop some of them off
-    return tau[50:]
+    return tau
 
 def testGoodness(ts,ss,model):
-    N = len(model[4][0])
-    lambdas = list(model[4][0])
+    lambdas = list(model[3])
+    N = len(lambdas)
     ts = ts[1:]
     ss = map(lambda x:int(x)-1,ss)
 
@@ -217,10 +225,11 @@ def testGoodness(ts,ss,model):
             print(ts_for_states[x])
             rv = expon(0,1/lambdas[x])
             #print kstest(ts_for_states[x],rv.cdf)
-            #r['print'](r['ks.test'](FloatVector(ts_for_states[x]),'pexp',lambdas[x]))
-            r['print'](r['ks.test'](FloatVector(ts_for_states[x]),'plnorm',lambdas[x]))
+            r['print'](r['ks.test'](FloatVector(ts_for_states[x]),'pexp',lambdas[x]))
+            #r['print'](r['ks.test'](FloatVector(ts_for_states[x]),'plnorm',lambdas[x]))
         else:
             print "State " + str(x) + " is empty"
+        raw_input()
 
 ############################################################
 print "Doing nothing of any importance..."
@@ -254,23 +263,23 @@ for _ in range(sims):
         state = ss[i]
         ts.append((t,state))
 
-model = fitmmpp(process,3)
-plotPoisson(process)
-shadeStates(ts)
-xlim(0,10000)
-savefig("./write-up/images/trace_mmpp1.svg")
-show()
-V = r['Viterbi'](model)
-r['print'](model)
-raw_input()
-plotPoisson(process)
-print "shading states"
-print V
-xlim(0,10000)
-shadeStates(zip(process,list(V)))
-print "done!"
-savefig("./write-up/images/fit_mmpp1.svg")
-show()
+#model = fitmmpp(process,3)
+#plotPoisson(process)
+#shadeStates(ts)
+#xlim(0,10000)
+#savefig("./write-up/images/trace_mmpp1.svg")
+#show()
+#V = r['Viterbi'](model)
+#r['print'](model)
+#raw_input()
+#plotPoisson(process)
+#print "shading states"
+#print V
+#xlim(0,10000)
+#shadeStates(zip(process,list(V)))
+#print "done!"
+#savefig("./write-up/images/fit_mmpp1.svg")
+#show()
 print "Reading data..."
 
 tau = getDates("./twitterextract")
@@ -284,9 +293,11 @@ tau = malleate(tau)
 
 print "Fitting mmpp..."
 
-model = fitdthmm(tau,4, maxiters = 1500)
+model = fitmmpp(tau,4, maxiters = 1500)
 
 r['print'](model)
+
+raw_input()
 
 #print "Pickling model..."
 
@@ -303,12 +314,12 @@ testGoodness(tau,V,model)
 print "Plotting process..."
 
 #plotPoisson(tau)
-plotPoisson2D(times[50:])
+plotPoisson2D(times)
 
 #print "Shading states..."
 
 #shadeStates(zip(tau,V))
-shadeStates2D(times[50:],V)
+shadeStates2D(times,V)
 
 print "OH MY GOD IT'S A GRAPH"
 
