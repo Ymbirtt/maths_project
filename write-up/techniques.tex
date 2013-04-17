@@ -174,7 +174,7 @@ From here, we can proceed as normal. We define $T$ as before to record our most 
 		$V_{1,s} <- p_s(t_1)\delta_s$
 	}
 	\For{$t \leftarrow 2$ \KwTo $T$}{
-		A <- $e^{Q\tau_t}$
+		$A <- e^{Q\tau_t}$
 		\For{$s \in S$}{
 			$V_{t,s} <- p_s(\tau_t) \max_{s' \in S}(A_{s',s}V_{t-1,s'})$ \\
 			$T_{t,s} <- \argmax_{s' \in S}(A_{s',s}V_{t-1,s'})$
