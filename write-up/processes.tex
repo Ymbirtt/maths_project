@@ -4,28 +4,32 @@
 
 A stochastic process \cite[p590]{doob96} is a collection $\{X_t  | t \in T\}$ (sometimes $X(t)$ for continuous $T$) of random variables. These collections may be indexed arbitrarily, but tend to be used to describe the evolution of some random series of events, using $T$ to be some representation of either discrete or continuous time, for instance $X_t$ may be the number of observed emissions from a radioactive source after $t$ minutes or the lisence plate of the $t^{th}$ car to go past a speed camera.
 
-A Markov Chain is a stochastic process with a particular property. We usually set $T=\{0,1,2,...\}=\mathbb{N}$ or $T =\{x | x \geqslant 0 \} = \mathbb{R}^{+}$. If $T=\mathbb{N}$ and each $X_t$ is a discrete random variable over the set $S$, then we say that $(X_t)_{t \in \mathbb{N}}$ obeys the Markov Property iff
+A Markov Chain is a particular form of discrete-time stochastic process. We usually set $T=\{0,1,2,...\}=\mathbb{N}$ and we say that $(X_t)_{t \in \mathbb{N}}$ obeys the Markov Property iff
 
 $$
 \forall t \in T, s \in S \quad \pr (X_{t+1} = s | X_0, X_1, ... X_t) = \pr (X_{t+1} = s | X_t)\cite{mwmarkov}
 $$
 
-Similarly, if $T=\mathbb{R}^{+}$, we have a continuous analogue to the Markov Property;
+If a stochastic process obeys the Markov Property, then we say that it is a Markov Chain (MC). We refer to $S$ as the state-space, each $s \in S$ is a state, and $X_t$ represents the state at time t. We usually write the Markov Property as ``given the present, the future is conditionally independent of the past" \cite{mwmarkov}.
+%COVER THIS IN G&S CITATIONS
+
+There is also a continuous analogue to the Markov Chain - the Continuous Time Markov Process (CTMP). We set $T=\mathbb{R}^{+}$,and define a similar Markov Property;
 
 $$
 \forall \delta > 0, s \in S \quad \pr (X(t+\delta) = s | \{X(\tau), \tau < t\}) = \pr (X(t+\delta) = s | X_t)
 $$
 
-If a stochastic process obeys the Markov Property, then we say that it is a Markov Chain. If a stochastic process obeys the continuous analogue to the Markov Property, then it is referred to as a Continuous Time Markov Process (CTMP). We refer to $S$ as the state-space, each $s \in S$ is a state, and $X_t$ represents the state at time t. We usually write the Markov Property as ``given the present, the future is conditionally independent of the past" \cite{mwmarkov}.
-%COVER THIS IN G&S CITATIONS
-
-We'll be dealing exclusively with discrete Markov Chains in this project, ie a Markov Chain where $S$ is discrete. In most cases, $S \subseteq \mathbb{Z}$, though our states can be integers, real numbers, popes, or any other completely arbitrary non-empty set. Where $S$ is discrete, we define $\mathbf{\delta} = (\delta_i)_{i \in S}$, the initial probability vector, and $\Pi = (\pi_{ij})_{(i,j) \in S^2}$, the matrix of transition probabilities, such that.
+We'll be dealing exclusively with the discrete-space case in this project, ie a Markov Chain where $S$ is discrete, though we'll need both MCs and CTMPs. It is popular for many authors to set $S \subseteq \mathbb{Z}$, though our states can be integers, real numbers, popes, or any other completely arbitrary non-empty set. Where $S$ is discrete, we define $\mathbf{\delta} = (\delta_i)_{i \in S}$, the initial probability vector, and $\Pi = (\pi_{ij})_{(i,j) \in S^2}$, the matrix of transition probabilities, such that.
 \begin{align*}
 \delta_i &= \pr (X_0 = i) \\
 \pi_{ij} &= \pr(X_{t+1} = j | X_t = i) \forall t \in \mathbb{N}
 \end{align*}
 
-Every discrete-state Markov Chain with $T=\mathbb{N}$ can be uniquley defined by the triple $(S,\delta,\Pi)$.
+Every discrete-state Markov Chain can be uniquley defined by the triple $(S,\delta,\Pi)$. Naturally, the row sums of $\Pi$ should be $1$, ie
+
+$$
+\forall i \in S, \; \sum_{j \in S} \pi_{ij} = 1
+$$
 
 For CTMPs, we usually define the transition rate matrix $Q$ such that
 
@@ -39,7 +43,12 @@ $$
 \forall i,j \in S, \delta>0 \quad \pr (X(t+\delta)=j|X(t)=i) = (e^{\delta Q})_{ij}
 $$
 
-That is, the $i,j^{th}$ element of the matrix exponential of $\delta Q$. With the initial probability vector $\delta$ defined as before, we can uniquely define any CTMP with the triple $(S,\delta,Q)$.
+That is, the $i,j^{th}$ element of the matrix exponential of $\delta Q$. With the initial probability vector $\delta$ defined as before, we can uniquely define any CTMP with the triple $(S,\delta,Q)$. $Q$'s row sums are always 0, with all off-diagonal elements being positive, and all diagonal elements being negative, ie
+
+\begin{align*}
+\forall i,j \in S, i \neq j => q_{ij} > 0 \\
+\forall i \in S, q_{ii} = -\sum_{j \neq i} q_{ij}
+\end{align*}
 
 \subsection{An Intuitive Interpretation}
 
@@ -48,15 +57,13 @@ Whilst the above defines Markovian Processes, it fails to describe them in any i
 As an example, let's use the following definitions, with $\delta$ and $\Pi$ indexed in the order the elements of $S$ are written;
 
 \begin{align*}
-S &= \{\mbox{John Paul II}, \mbox{Avian I}\}\\
+S &= \{\mbox{John Paul II}, \mbox{Adrian I}\}\\
 \delta &= \left(1,0\right)\\
 \Pi &=
-\left(
-\begin{matrix}
-0.3&0.7\\
-0.7&0.3
-\end{matrix}
-\right)
+\bordermatrix{      & JP2&A1 \cr
+                JP2 & 0.3 &  0.7 \cr
+                A1  & 0.9 &  0.1 
+			}
 \end{align*}
 
 This defines a Discrete Time Markov Chain with the following graph:
@@ -74,18 +81,37 @@ This defines a Discrete Time Markov Chain with the following graph:
   ;
 \end{tikzpicture}
 
-We can then say that a discrete Markov Chain will hop from node to node at each time step with probabilities defined by the weights of the edges between the current node and its neighbours.
 
-% MC simulation algorithms
-
-A CTMP is slightly more complex; on arriving in a state $i$, all neighboring states $j$ generate a random time $T ~ Exp(-q_{ii})$. We say that the CTMP will remain in state $i$ for $T$ units of time, then jump to state $j$ with probability $\frac{-q_{ij}}{q_{ii}}$. We can simulate a CTMP with the following algorithm;
+We can then say that a discrete Markov Chain will hop from node to node at each time step with probabilities defined by the weights of the edges between the current node and its neighbors, and can be simulated by algorithm \ref{algmc}.
 
 \begin{algorithm}
 \SetAlgoLined
 \SetKwInOut{Input}{input}
 \SetKwInOut{Output}{output}
 
-\caption{A Simulation Algorithm for the generic CTMP}
+\caption{A Simulation Algorithm for the generic Markov Chain}\label{algmc}
+\Input{$(S,\delta,\Pi)$, a Markov Chain, and $T$, a maximum number of steps to simulate}
+\Output{$\mathbf{s}$, a vector of states $s_i$, recording the sequence of states visited by the chain}
+
+\Begin{
+	$s_1 <- \sigma \quad wp \; \; \delta_\sigma$ \tcc{s0 takes on state sigma 
+											with probability delta sigma}
+	\For{$n <- 2$ \KwTo $T$}{
+		$s_n <- \sigma \quad wp \; \; \pi_{s_{n-1},\sigma}$
+		\tcc{sn takes on state sigma with the relevant probability}
+	}
+	\KwRet $\mathbf{s}$
+}
+\end{algorithm}
+
+A CTMP is slightly more complex; on arriving in a state $i$, we generate a random time $T \sim Exp(-q_{ii})$. We say that the CTMP will remain in state $i$ for $T$ units of time, then jump to state $j$ with probability $\frac{-q_{ij}}{q_{ii}}$. We can simulate a CTMP with algorithm \ref{algctmp}.
+
+\begin{algorithm}
+\SetAlgoLined
+\SetKwInOut{Input}{input}
+\SetKwInOut{Output}{output}
+
+\caption{A Simulation Algorithm for the generic CTMP}\label{algctmp}
 \Input{$(S,\delta,Q)$, a CTMP, and $T$, a maximum time for which to simulate the process}
 \Output{$\mathbf{t}$, a vector of pairs $(t_i,s_i)$, recording the time and destination of the $i^{th}$ transition.}
 
@@ -131,14 +157,14 @@ The graph for this process is similarly simple
 
 Implicit from this, we see that the process can only increase - once leaving a state, we never return, so we can define the emission times $t_n$, as $t_n = \min\{t | N(t)\geqslant n\}$. We can also define $\tau_n = t_n-t_{n-1}$, the inter-arrival times for the $n^{th}$ jump for $n \{1,2,...\}$. We refer to these as emissions and arrivals since a Poisson Process generally models a counting process, whereby we record the times at which we observe things happening, eg the times at which radioactive particles are detected from a radioactive material.
 
-A modification of the generic CTMP simulation algorithm can be made for simulating  a Poisson Process. Since it's only possible to jump from state $i$ to state $i+1$, we need not record the destinations of each jump; jump $i$ will always take us to state $i$.
+A modification of the generic CTMP simulation algorithm can be made for simulating  a Poisson Process. Since it's only possible to jump from state $i$ to state $i+1$, we need not record the destinations of each jump; jump $i$ will always take us to state $i$. This is detailed in algorithm \ref{algpp}.
 
 \begin{algorithm}
 \SetAlgoLined
 \SetKwInOut{Input}{input}
 \SetKwInOut{Output}{output}
 
-\caption{A Simulation Algorithm for the Poisson Process}
+\caption{A Simulation Algorithm for the Poisson Process}\label{algpp}
 \Input{$\lambda$, a poisson process rate and $T$, a maximum time for which to simulate}
 \Output{$\mathbf{t}$, the emission times of a Poisson process of rate $\lambda$ terminating before time $T$}
 
@@ -162,14 +188,14 @@ $$
 $$
 
 Since this process is no longer Markovian, it makes little sense to draw its transition rate graph, however it remains a powerful tool. Simulating one of these is, however, less simple. The algorithm for doing so is based on Bernoulli thinning %cite
-and can be defined thus:
+and is equivalent to algorithm \ref{algthin}
 
 \begin{algorithm}
 \SetAlgoLined
 \SetKwInOut{Input}{input}
 \SetKwInOut{Output}{output}
 
-\caption{A Thinning Algorithm for Poisson Processes}
+\caption{A Thinning Algorithm for Poisson Processes}\label{algthin}
 \Input{$\lambda : [0,T] -> [0,\lambda_{max}]$, a desired rate function for the resulting Poisson Process, and $\mathbf{t}$, the emission times of a Poisson Process of rate no greater than $\lambda_{max}$, terminating before time $T$, indexed from 1 to $n$}
 \Output{$\mathbf{t'}$, the emission times an inhomogeneous Poisson Process with rate function $\lambda$}
 
@@ -187,9 +213,7 @@ and can be defined thus:
 }
 \end{algorithm}
 
-So if we can find an upper bound for our rate function, we can combine algorithms %ref
-and %ref
-to simulate arbitrary inhomogeneous poisson processes.
+So if we can find an upper bound for our rate function, we can combine algorithms \ref{algpp} and \ref{algthin} to simulate arbitrary inhomogeneous poisson processes.
 
 \section{Hidden Markov Models}
 
@@ -197,14 +221,28 @@ The Hidden Markov Model is an extention of the Markov Chain used for fitting var
 
 With discrete time and state space, rather than having a directly observable Markov Chain, we assume that the process we observe has an underlying unobservable Markov Chain. We then define an observation space $O$, and a set of probability distrubtions, $\{p_s | s \in S\}$. Before jumping out of state $s$, the Markov Chain emits observation $o$ with probability $p_s(o)$. Alternatively, we can define a continuous $O$ with probability densities instead of a probability distribution.
 
-The traditional example is that of the ``unfair casino". Imagine the dealer at the casino has two six-sided dice. Die one is fair, but die two is weighted such that it never shows a $6$, and shows the numbers 1 to 5 with equal probabilities. The dealer will clandestinely swap the dice with probability $0.1$ before rolling. Here, our state space is $\{1,2\}$ and our observation space is $\{1,2,3,4,5,6\}$. We can represent this as follows;
-%POOT DIAGRAM HERE
+The traditional example is that of the ``unfair casino". Imagine the dealer at the casino has two six-sided dice. Die one is fair, but die two is weighted such that it never shows a 6, and shows the numbers 1 to 5 with equal probabilities. The dealer will clandestinely swap the dice with probability $0.1$ before rolling. He selects his first die uniformly. We can represent this as follows;
+
+\begin{align*}
+S &= \{1,2\}\\
+\delta &= (1,0)\\
+\Pi &= 
+\left(
+	\begin{matrix}
+	0.9 & 0.1 \\
+	0.1 & 0.9
+	\end{matrix}
+\right)\\
+O &= \{1,2,3,4,5,6\}\\
+x \in O => p_1(x) &= \frac{1}{6}\\
+x \in O \setminus \{6\} => p_2(x) &= \frac{1}{5}
+\end{align*}
 
 We can only observe the results of the dice rolls, but what we're interested in is the underlying model. Firstly, we want to know what die the dealer is likely to be using at any given time - if I've seen the dealer roll a 6, I know he was using the fair die then, so he will use the fair die again with probability $0.9$, for example. Further to this, suppose we didn't know the above parameters in advance. We may also want to estimate them from observations in some way.
 
 \section{The Markov-Modulated Poisson Process}
 
-The Markov-Modulated Poisson Process (MMPP) is a particularly devious form of Hidden Markov Model. We assume that, underlying an emittor, there is a CTMP. Each state is tied to a fixed Poisson Process rate, so $S = \{\lambda_1,...,\lambda_n\}$. The instantaneous rate of the poisson process is then defined by the state in which the underlying CTMP resides. We can define such a process by letting $\mathbf{t} = ((t_0,s_0),...,(t_n,s_n))$ be a trace of the CTMP as generated by %algorithm
+The Markov-Modulated Poisson Process (MMPP) is a particularly devious form of Hidden Markov Model. We assume that, underlying an emittor, there is a CTMP. Each state is tied to a fixed Poisson Process rate, so $S = \{\lambda_1,...,\lambda_n\}$. The instantaneous rate of the poisson process is then defined by the state in which the underlying CTMP resides. We can define such a process by letting $\mathbf{t} = ((t_0,s_0),...,(t_n,s_n))$ be a trace of the CTMP as generated by algorithm \label{algctmp}
 , and $\lambda : [0,T]->S$ be the step function generated by simulating the underlying CTMP, ie;
 
 $$
