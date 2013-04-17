@@ -74,7 +74,7 @@ This defines a Discrete Time Markov Chain with the following graph:
   ;
 \end{tikzpicture}
 
-We can then say that a discrete Markov Chain will hop from node to node at each time step with probabilities defined by the weights of the edges between the current node and its neighbors.
+We can then say that a discrete Markov Chain will hop from node to node at each time step with probabilities defined by the weights of the edges between the current node and its neighbours.
 
 % MC simulation algorithms
 
@@ -115,7 +115,19 @@ $$
 $$
 
 The graph for this process is similarly simple
-%poot graph here
+
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.5cm]
+  \node[state]         (0)                     {0};
+  \node[state]         (1)  [right of = 0]     {1};
+  \node[state]         (2)  [right of = 1]     {2};
+  \node[state]         (3)  [right of = 2]     {3};
+
+  \path  (0) edge   node {$\lambda$} (1)
+         (1) edge   node {$\lambda$} (2)
+         (2) edge   node {$\lambda$} (3)
+  ;
+  \draw  (0.east) -- ([xshift=1ex]0.east);
+\end{tikzpicture}
 
 Implicit from this, we see that the process can only increase - once leaving a state, we never return, so we can define the emission times $t_n$, as $t_n = \min\{t | N(t)\geqslant n\}$. We can also define $\tau_n = t_n-t_{n-1}$, the inter-arrival times for the $n^{th}$ jump for $n \{1,2,...\}$. We refer to these as emissions and arrivals since a Poisson Process generally models a counting process, whereby we record the times at which we observe things happening, eg the times at which radioactive particles are detected from a radioactive material.
 
