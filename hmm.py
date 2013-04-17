@@ -136,10 +136,10 @@ def fitdthmm(tau, states = -1, maxiters = 500):
         print "Estimating states..."
 
         for k in range(2,10):
-            m = fitmmpp(tau,states=k, maxiters = maxiters)
+            m = fitdthmm(tau,states=k, maxiters = maxiters)
             LL = m[-3][0]
             print "LL=" + str(LL)
-            BIC = (k*k*log(len(tau))) - (2*LL)
+            BIC = ((k*k+k-1)*log(len(tau))) - (2*LL)
             if BIC<mini[1]:
                 mini = (k,BIC,m)
             print "k= " + str(k)
@@ -149,13 +149,13 @@ def fitdthmm(tau, states = -1, maxiters = 500):
 
         r('''library(HiddenMarkov)''')
 
-        t = [log(tau[n]-tau[n-1]) for n in range(1,len(tau))]
+        t = [(tau[n]-tau[n-1]) for n in range(1,len(tau))]
         delta = [1/states for _ in range(states)]
-        distn = "norm"
+        distn = "exp"
         pm = [s+1 for s in range(states)]
         ones = [1 for _ in range(states)]
         Pi = [[1/states for _ in range(states)] for _ in range(states)]
-        control = r['bwcontrol'](maxiters,posdiff=False,converge=False)
+        control = r['bwcontrol'](maxiters)
 
         Pi = FloatVector([q for q_ in Pi for q in q_])
         Pi = r['matrix'](Pi,states)
@@ -165,8 +165,9 @@ def fitdthmm(tau, states = -1, maxiters = 500):
         delta = FloatVector(delta)
         pm = FloatVector(pm)
         ones = FloatVector(ones)
-        model = r['dthmm'](t,Pi,delta,distn,r['list'](mean=pm,sd=ones))
-        #print model
+        model = r['dthmm'](t,Pi,delta,distn,r['list'](rate=pm))
+        r['print'](model)
+        raw_input()
         return r['BaumWelch'](model, control)
 
 
@@ -191,28 +192,36 @@ def malleate(tau):
     #The first few results seem to be outliers - let's lop some of them off
     return tau
 
-def testGoodness(ts,ss,model):
-    lambdas = list(model[3])
+def testGoodness(ss,model):
+    for m in model:
+        print m
+        raw_input()
+    lambdas = list(model[4][0])
     N = len(lambdas)
-    ts = ts[1:]
+    ts = model[0]
     ss = map(lambda x:int(x)-1,ss)
 
     print ss
+    raw_input()
     print N
+    raw_input()
     print lambdas
+    raw_input()
     print len(ts)
+    raw_input()
     print len(ss)
+    raw_input()
 
     ts_for_states = [[] for _ in lambdas]
 
     #print ss
 
-    for x in range(1,len(ts)):
-          if ss[x] == ss[x-1]:
-              ts_for_states[ss[x]].append(ts[x]-ts[x-1])
+    #for x in range(1,len(ts)):
+    #      if ss[x] == ss[x-1]:
+    #          ts_for_states[ss[x]].append(ts[x])
 
-    #for (t,s) in zip(ts,ss):
-          #ts_for_states[s].append(t)
+    for (t,s) in zip(ts,ss):
+          ts_for_states[s].append(t)
 
     for x in range(N):
         if ts_for_states[x]:
@@ -293,9 +302,9 @@ tau = malleate(tau)
 
 print "Fitting mmpp..."
 
-model = fitmmpp(tau,4, maxiters = 1500)
+model = fitdthmm(tau,5, maxiters = 1500)
 
-r['print'](model)
+r['print'](r['summary'](model))
 
 raw_input()
 
@@ -309,7 +318,7 @@ print "Predicting state transitions..."
 #r('''library(HiddenMarkov)''')
 V = list(r['Viterbi'](model))
 
-testGoodness(tau,V,model)
+testGoodness(V,model)
 
 print "Plotting process..."
 
