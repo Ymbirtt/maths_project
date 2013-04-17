@@ -95,7 +95,7 @@ def fitmmpp(tau, states = -1, maxiters = 500):
         for k in range(2,10):
             m = fitmmpp(tau,states=k, maxiters = maxiters)
             LL = m[-3][0]
-            BIC = (k*k*log(len(tau))) - (2*LL)
+            BIC = ((k*k+k-1)*log(len(tau))) - (2*LL)
             if BIC<mini[1]:
                 mini = (k,BIC,m)
             print "k= " + str(k)
@@ -119,7 +119,7 @@ def fitmmpp(tau, states = -1, maxiters = 500):
         Q = FloatVector([q for q_ in Q for q in q_])
 
         Q = r['matrix'](Q,states)
-        
+
         model = r['mmpp'](tau,Q,delta,lambd)
 
         return r['BaumWelch'](model, control)
@@ -156,7 +156,7 @@ def fitdthmm(tau, states = -1, maxiters = 500):
         Pi = FloatVector([q for q_ in Pi for q in q_])
         Pi = r['matrix'](Pi,states)
         print t
-        
+
         t = FloatVector(t)
         delta = FloatVector(delta)
         pm = FloatVector(pm)
