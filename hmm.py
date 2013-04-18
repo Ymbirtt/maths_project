@@ -232,14 +232,20 @@ def testGoodness(ss,model):
             print "1/lambda = " + str(1/lambdas[x])
             #print(ts_for_states[x])
             
+            #xs = FloatVector([log(t) for t in ts_for_states[x] if t!=0])
             xs = FloatVector(ts_for_states[x])
             d = r['density'](xs)
             
-            r['svg']('./write-up/images/density_mmpp1_state' + str(x+1) + '.svg')
-            r['plot'](d, main="Estimated probability density of state " + str(x+1), col = "blue")
-            r('curve(dexp(x), rate ='+ str(1/mu) + ', add=TRUE, col = "red")')
+            #r['svg']('./write-up/images/density_mmpp1_state' + str(x+1) + '.svg')
+            #r['plot'](d, main="Estimated probability density of state " + str(x+1), col = "blue", xlab = "x")
+            #r('curve(dexp(x, rate ='+ str(1/mu) + '), add=TRUE, col = "red")')
+            #r['dev.off']()
+            
+            r['svg']('./write-up/images/density_mmpp2_state' + str(x+1) + '.svg')
+            r['plot'](d, main="Estimated probability density of state " + str(x+1), col = "blue", xlab = "log x")
+            r('curve(dnorm(x, mean ='+ str(mean(xs)) + ', sd =' + str(std(xs)) +'), add=TRUE, col = "red")')
             r['dev.off']()
-            r['print'](r['ks.test'](xs,'pexp',lambdas[x]))
+            #r['print'](r['ks.test'](xs,'pexp',lambdas[x]))
             #r['print'](r['ks.test'](FloatVector(ts_for_states[x]),'pnorm',lambdas[x]))
         else:
             print "State " + str(x) + " is empty"
