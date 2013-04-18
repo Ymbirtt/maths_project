@@ -190,27 +190,24 @@ def malleate(tau):
     tau.sort()
 
     #The first few results seem to be outliers - let's lop some of them off
-    return tau
+    return tau[50:]
 
 def testGoodness(ss,model):
-    for m in model:
-        print m
-        raw_input()
     lambdas = list(model[4][0])
     N = len(lambdas)
     ts = model[0]
     ss = map(lambda x:int(x)-1,ss)
 
     print ss
-    raw_input()
+    #raw_input()
     print N
-    raw_input()
+    #raw_input()
     print lambdas
-    raw_input()
+    #raw_input()
     print len(ts)
-    raw_input()
+    #raw_input()
     print len(ss)
-    raw_input()
+    #raw_input()
 
     ts_for_states = [[] for _ in lambdas]
 
@@ -227,15 +224,23 @@ def testGoodness(ss,model):
         if ts_for_states[x]:
             print "Testing fit for state " + str(x)
             print str(len(ts_for_states[x])) + " events"
-            print "mu = " + str(mean(ts_for_states[x]))
+            mu = mean(ts_for_states[x])
+            print "mu = ", mu
+            print "1/mu = ", 1/mu
             print "var = " + str(std(ts_for_states[x]))
             print "lambda = " + str(lambdas[x])
             print "1/lambda = " + str(1/lambdas[x])
-            print(ts_for_states[x])
-            rv = expon(0,1/lambdas[x])
-            #print kstest(ts_for_states[x],rv.cdf)
-            r['print'](r['ks.test'](FloatVector(ts_for_states[x]),'pexp',lambdas[x]))
-            #r['print'](r['ks.test'](FloatVector(ts_for_states[x]),'plnorm',lambdas[x]))
+            #print(ts_for_states[x])
+            
+            xs = FloatVector(ts_for_states[x])
+            d = r['density'](xs)
+            
+            r['svg']('./write-up/images/density_mmpp1_state' + str(x+1) + '.svg')
+            r['plot'](d, main="Estimated probability density of state " + str(x+1), col = "blue")
+            r('curve(dexp(x), rate ='+ str(1/mu) + ', add=TRUE, col = "red")')
+            r['dev.off']()
+            r['print'](r['ks.test'](xs,'pexp',lambdas[x]))
+            #r['print'](r['ks.test'](FloatVector(ts_for_states[x]),'pnorm',lambdas[x]))
         else:
             print "State " + str(x) + " is empty"
         raw_input()
@@ -302,20 +307,20 @@ tau = malleate(tau)
 
 print "Fitting mmpp..."
 
-model = fitdthmm(tau,5, maxiters = 1500)
+#model = fitdthmm(tau,5, maxiters = 1500)
 
-r['print'](r['summary'](model))
+#r['print'](r['summary'](model))
 
-raw_input()
+#raw_input()
 
-#print "Pickling model..."
+print "Pickling model..."
 
-#model = pickle.load(open('./mmpp.stash','r'))
+model = pickle.load(open('./mmpp.stash','r'))
 #pickle.dump(model,open('./mmpp.stash','w'))
 
 print "Predicting state transitions..."
 
-#r('''library(HiddenMarkov)''')
+r('''library(HiddenMarkov)''')
 V = list(r['Viterbi'](model))
 
 testGoodness(V,model)
@@ -323,12 +328,12 @@ testGoodness(V,model)
 print "Plotting process..."
 
 #plotPoisson(tau)
-plotPoisson2D(times)
+plotPoisson2D(times[50:])
 
 #print "Shading states..."
 
 #shadeStates(zip(tau,V))
-shadeStates2D(times,V)
+shadeStates2D(times[50:],V)
 
 print "OH MY GOD IT'S A GRAPH"
 
