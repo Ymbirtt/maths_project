@@ -1,8 +1,8 @@
-Now that we've defined a selection of random processes, we can grab our data and start modelling it. We'll try out a few potential models, simulate some traces from them, and see how well we can re-establish the original model, then go on to discuss their use for this particular problem.
+Now that we've defined a selection of random processes, we can start discussing what might be appropriate to fit to our data. We'll define a particular emission model, simulate it, and then see what we can recover from it.
 
 \section{Fitting a Non-Homogeneous Poisson Process}
 
-The simplest place to start is with a non-homogeneous poisson process. We assume that the tweeter emits tweets according to an inhomogeneous poisson process, and attempt to find its rate function. For convenience, we'll describe our time in hours, though naturally the units could be arbitrary. We start by simulating a poisson process of known rate, and seeing how well we can recover the original rate function. We start with a simple step function,
+The simplest place to start would be a homogeneous Poisson process, though a cursory glance at our data suggests that this would not be appropriate - the user is clearly tweeting at different rates at different times of day, and is not homogeneous. Let's try a non-homogeneous poisson process. We assume that the tweeter emits tweets according to an inhomogeneous poisson process, and attempt to find its rate function. For convenience, we'll describe our time in hours, though naturally the units could be arbitrary. We start by simulating a poisson process of known rate function, and seeing how well we can recover it. We start with a simple step function,
 
 $$
 \lambda(t) = 
@@ -21,7 +21,7 @@ We can fit a step function by observing multiple traces of these poisson process
 . The average number of emissions per trace is the integral of the rate wrt time over the time interval for which we observe, ie if $N$ is the number of observed emissions in a single trace,
 
 $$
-\mathbb{E}(N) = \int^100_0 \lambda(t) \; dt = 600
+\mathbb{E}(N) = \int^{100}_0 \lambda(t) \; dt = 600
 $$
 
 So if we run out 6 traces we'll observe roughly $3,600$ emissions, a little more than our real data set. Fitting a function to these gives us the results from %diagram
@@ -33,7 +33,7 @@ happens
 
 %Lots of steps in a step function
 
-We could instead attempt to fit a polynomial function, but a smooth function is subject to one very large problem with twitter data - humans don't behave in a smooth manner. Our usage of twitter throughout a day does not vary along some continuum - in the simplest sense, we can't be half on and half off twitter at some given moment, but there's a worse problem, visible in %figure
+We could instead attempt to fit a polynomial function but this requires more parameters, and ignores a somewhat worse problem, visible in %figure
 
 % Trace of one day, showing bursts
 
@@ -54,9 +54,11 @@ Fitting a Hiddin Markov Model of any kind relies on two main algorithms, Baum-We
 and Viterbi
 %cite
 . The Baum-Welch Algorithm is an expectation-maximisation algorithm for finding the transition probabilities/rates and the emission probabilities, given a set of possible emissions, a number of states to fit and an observed sequence of emissions. Viterbi will take an observed sequence of emissions and the parameters of an HMM, and produce the most likely state in which each of these emissions happened. The HiddenMarkov package hosted on CRAN \cite{hiddenmarkov}
-is the only easily-accessible Hidden Markov Model package which supports the Markov Modulated Poisson Process, but does not contain any implementation of the Viterbi algorithm. It therefore became necessary to write one.
+is the only easily-accessible Hidden Markov Model package which supports the Markov Modulated Poisson Process, but does not contain any implementation of the Viterbi algorithm. We have two ways of working around this, either write our own or discretise the process.
 
-\subsection{A derivation of the classical viterbi algorithm}
+Since the times between emissions in an MMPP are usually exponentially distributed, we could work in discrete time by letting $y_t$ be the time between the $t^{th}$ and $(t+1)^{th}$ emissions, though this sacrifices some information. We no longer consider the possibility of making multiple transitions between emissions, and ignore the intrinsic link between the times between emissions and the times between state transitions, but this model may also yield some useful results. We'll be trying out both of them.
+
+\subsection{A derivation of the classical Viterbi algorithm}
 
 The Viterbi algorithm for a standard Discrete Time Hidden Markov Model relies on a known, finite observation space $O$, a known distribution on $O$ for each state $s$, $p_s$, and known transition probabilities $\pi_i,j$, with known initial probabilities for each state $s$, $\delta_s$. We let $[k] = \{1,2,...,k\}$. The goal is, given a sequence of T observations $(y_n)_{n \in [T]}$, $y_i \in O$, to find the sequence of states $(x_n)_{n \in [T]}$ satisfying
 
