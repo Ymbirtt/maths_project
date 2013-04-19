@@ -32,14 +32,17 @@ So if we run out 6 traces we'll observe roughly $3,600$ emissions, a little more
 
 \begin{figure}[h]
 \includegraphics[width = \textwidth]{./images/fit_nonhom1.png}
-\caption{An attempt to recover the rate function used to generate Figure \ref{fit_nonhom1}}
+\caption{An attempt to recover the rate function used to generate Figure \ref{trace_nonhom1}}
 \label{fit_nonhom1}
 \end{figure}
 
-Eyeballing this, we see that it's not a terrible fit in this first attempt, but if we try a more complex rate function, %diagram
-happens
+Eyeballing this, we see that it's not a terrible fit in this first attempt, but if we try a more complex rate function, a situation similar to Figure \ref{fit_nonhom2} happens. The estimations are well off the mark.
 
-%Lots of steps in a step function
+\begin{figure}[h]
+\includegraphics[width = \textwidth]{./images/fit_nonhom2.png}
+\caption{A slightly more complex rate function, whose estimation barely resembles the original}
+\label{fit_nonhom2}
+\end{figure}
 
 We could instead attempt to fit a polynomial function but this requires more parameters, and ignores a somewhat worse problem, visible in %figure
 
@@ -145,9 +148,9 @@ Recall the dependencies for the DTHMM Viterbi Algorithm. We require knowledge of
 
 In an MMPP, we observe a Poisson Process of rate randomly varying between various known rates - the rates being our states. Let $S = \{\lambda_1,...,\lambda_m\}$. Our observations can be interpreted as exponential random variables of these rates. Let $\tau_0 = 0$, and $\tau_i$ be the time of the $i^{th}$ poisson emission for $i \in [n]$. Let $y_i = \tau_i-\tau_{i-1}$ for $i \in [n]$. Given that the underlying CTMP was in state $\lambda_s$ at time $\tau_i$, we have that $y_i \sim Exp (\lambda_s)$. From the properties of the generic CTMP, the probability that the process is in state $j$ at time $\tau_i$ given that it was in state $i$ at time $\tau_{i-1}$ is given by $(e^{Qy_i})_{\lambda_{i},\lambda_{j}}$. To ease notation, we'll write this as $(e^{Qy_i})_{i,j}$, omitting the $\lambda$s.
 
-The state space $S$ and transition rates $Q$ are estimated by the Baum Welch algorithm as before, so after running Baum Welch over an observed trace, we can start to find the most likey state at each emission. Note that this ``Viterbi Path" is not the most likely sequence of state transitions, it is instead the most likely state in which the underlying CTMP resides at the time of each emission. This quirk is discussed in %APPENDIX REF
+The state space $S$ and transition rates $Q$ are estimated by the Baum Welch algorithm as before, so after running Baum Welch over an observed trace, we can start to find the most likey state at each emission. Note that this ``Viterbi Path" is not the most likely sequence of state transitions, it is instead the most likely state in which the underlying CTMP resides at the time of each emission. 
 
-Since our emissions are continuous, we don't have any notion of ``most probable" - if we model height continuously, the probability that I meet someone exactly 1.8m tall is the same as the probability that I meet someone exactly 18m tall, they're both 0 - so instead we'll base our likelihood calculations off probability density - capturing the idea that, even though I don't know for certain that I'll meet one of the two, it's more likely for me to meet the 1.8m tall person.
+Since our emissions are continuous, we don't have any notion of ``most probable" - if we model height continuously, the probability that I meet someone exactly 1.8m tall is the same as the probability that I meet someone exactly 18m tall, they're both 0, so instead we'll base our likelihood calculations off probability density, capturing the idea that, even though I don't know for certain that I'll meet one of the two, it's more likely for me to meet the 1.8m tall person.
 
 We let $p_s(t)= \lambda_s e^{-t\lambda_s}$, the probability density of an exponential random varaible of rate $\lambda_s$ evaluated at $t$. Let $V_{t,s}$ be the probability density of the most likely path that leads us to emitting $y_t$ from state $s$. We have that
 
@@ -354,9 +357,15 @@ Y &= \mathbb{R}^{+}\\
 s \in S, y \in Y &=> p_s(y) = \lambda_s e^{-\lambda_sy}\\
 \end{align*}
 
-And finally perform some new KS tests to find one p-value of 0.03, and four others below $10^{-7}$.
+Which, when we add the Viterbi path to the plot, gives us Figure \ref{fit_dthmm1}.
 
-From this, we can definitively conclude that the data cannot be well-clustered into a small number of exponentially distributed subsets. We can then conclude that these data do not follow any kind of simple poisson process, in spite of appearances.
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/fit_dthmm1.png}
+\caption{The twitter data, with predicted states shaded - $\lambda_1$ in red, $\lambda_2$ in yellow, $\lambda_3$ in green, $\lambda_4$ in cyan and $\lambda_5$ in black. Burst states are, as usual, very difficult to see.}
+\label{fit_dthmm1}
+\end{figure}
+
+And finally perform some new KS tests to find one p-value of 0.03, and four others below $10^{-7}$. From this, we can definitively conclude that the data cannot be well-clustered into a small number of exponentially distributed subsets. We can then conclude that these data do not follow any kind of simple poisson process, in spite of appearances.
 
 \section{A Zoo of Problems}
 
@@ -364,25 +373,59 @@ Whilst this gives a fairly strong negative result that this tweeter is not a poi
 
 Let's start looking at the emissions estimated to occur in each state. Since the DTHMM gave slightly better p-values, we'll use that as a jumping-off point.
 
-% Density graphs here
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/density_mmpp1_state1.png}
+\caption{The estimated probability density of the inter-arrival times within state 1 (blue), alongside the probability density (red) of an exponential random variable of mean equal to the mean of the data.}
+\label{density_mmpp1_state1}
+\end{figure}
 
-And now we see an issue. The fits are close, but the heads of the distributions are light and their tails heavy. Indeed, on inspection, the observed emissions within each state seem closer to a low-variance lognormal distribution - if $X$ follows a lognormal distribution, then $\log(X)$ follows a normal distribution %cite mathworld
-. Plotting a lognormal density curve alongside the observed curve, we see a somewhat closer fit, even though we attempted to fit these data to an exponential distribution. Let's try doing this properly.
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/density_mmpp1_state2.png}
+\caption{The estimated probability density of the inter-arrival times within state 2 (blue), alongside the probability density of the relevant exponential random variable.}
+\label{density_mmpp1_state2}
+\end{figure}
+
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/density_mmpp1_state3.png}
+\caption{And so on}
+\label{density_mmpp1_state3}
+\end{figure}
+
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/density_mmpp1_state4.png}
+\caption{And so forth}
+\label{density_mmpp1_state4}
+\end{figure}
+
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/density_mmpp1_state5.png}
+\caption{Up to state 5}
+\label{density_mmpp1_state5}
+\end{figure}
+
+And now, observing figures \ref{density_mmpp1_state1} to \ref{density_mmpp1_state5} we see an issue. The fits are close, but the heads of the distributions are light and their tails heavy. Indeed, on inspection, the observed emissions within each state seem closer to a low-variance lognormal distribution - if $X$ follows a lognormal distribution, then $\ln(X)$ follows a normal distribution %cite mathworld
+. Plotting a normal density curve alongside the density of the natural logarithm of our observed inter-arrival times, as in \ref{density_mmpp2_state2}, we see something that almost looks like a correlation. Let's try doing this properly.
+
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/density_mmpp2_state3.png}
+\caption{The density of the natural logarithm of the supposedly exponential emissions from state 3 (blue), alongside a normal curve with mean and standard deviation equal to the observed means and standard deviations}
+\label{density_mmpp2_state3}
+\end{figure}
 
 Summing lognormal distributions into some stochastic process in the same way that we sum exponential distributions into a poisson process carries all manner of problems, however. The lognormal distribution is not memoryless, so the resulting processes within each state will be non-markovian, meaning that simple fitting algorithms like Baum-Welch and Viterbi require much more sophisticated modifications to work correctly.
 
-We can, however, fit a discrete model to the data using a DTHMM with lognormal emissions, so let's do that. We take the natural logarithm of all the differences in emission times, fit multiple models and evaluate their BICs. Here, each state requires 2 parameters, a mean and a standard deviation, so the number of free parameters in an s-state model is now $s^2+2s-1$. We find that the optimal number of states is 3, and go ahead again with the KS tests, correcting the parameters for the estimated emissions within each state, resulting in p-values of 0.309, 0.174 and 0.413. At last, we have some statistically significant results, with the following parameters;
+We can, however, fit a discrete model to the data using a DTHMM with lognormal emissions, so let's do that. We take the natural logarithm of all the differences in emission times, fit multiple models and evaluate their BICs. Here, each state requires 2 parameters, a mean and a standard deviation, so the number of free parameters in an s-state model is now $s^2+2s-1$. We find that the optimal number of states is 3, and go ahead again with the KS tests, correcting the parameters for the estimated emissions within each state, resulting in p-values of 0.312, 0.156 and 0.420. At last, we have some statistically significant results, with the following parameters;
 
 \begin{align*}
 S &= \{1,2,3\}\\
-(\mu_1, \mu_2, \mu_3) &= (-3.39, -1.43, 2.42)\\
-(\sigma_1, \sigma_2, \sigma_3) &= (1.48, 1.79, 0.273)\\
+(\mu_1, \mu_2, \mu_3) &= (-3.33, -1.33, 2.34)\\
+(\sigma_1, \sigma_2, \sigma_3) &= (1.47, 1.86, 0.366)\\
 \delta &= (0,1,0)\\
 \Pi &= 
 \left(
 	\begin{matrix}
-     0.924 & 0.070 & 0.006 \\
-     0.005 & 0.903 & 0.049 \\
+     0.926 & 0.069 & 0.006 \\
+     0.047 & 0.906 & 0.047 \\
      0.000 & 0.865 & 0.135
 	\end{matrix}
 \right)\\
@@ -390,5 +433,12 @@ Y &= \mathbb{R}\\
 s \in S => p_s(y) &= \frac{\exp({-\frac{(y-\mu_s)^2}{2\sigma_s^2}})}{\sigma_s\sqrt{2\pi}}
 \end{align*}
 
-Given a sequence of emissions from this DTHMM, $\mathbf{y}$, the inter-arrival times are then $\mathbf{t}$ with $t_i = e^{y_i}$. Perhaps a little strangely, shading the states onto our graph as in figure %fig
+Given a sequence of emissions from this DTHMM, $\mathbf{y}$, the inter-arrival times are then $\mathbf{t}$ with $t_i = e^{y_i}$. Perhaps a little strangely, shading the states onto our graph as in figure \ref{fit_dthmm2}
 gives a less obvious seasonality to the tweeter's behavior. We still have observable and highlighted bursts as well as some regularity to the user's sleeping patterns, but they're less obvious here than with the MMPP. More work would certainly throw up more results, perhaps this requires a continuous time model for such things to be seen.
+
+\begin{figure}
+\includegraphics[width = \textwidth]{./images/fit_dthmm2.png}
+\caption{The state transitions estimated by Viterbi for a dthmm with lognormal emissions, state 1 in red, 2 in yellow, 3 in green}
+\label{fit_dthmm2}
+\end{figure}
+
