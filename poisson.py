@@ -122,7 +122,7 @@ def main():
     show()
 
     zs,ms = fit(ys,2)
-       
+
     f=lambda x:lookup(x,zs,tmax/bins)
     
     plot([baz(x) for x in range(0,tmax)],'red', label = "True rate function")
