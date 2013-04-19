@@ -60,7 +60,7 @@ Since the times between emissions in an MMPP are usually exponentially distribut
 
 \subsection{A derivation of the classical Viterbi algorithm}
 
-The Viterbi algorithm for a standard Discrete Time Hidden Markov Model relies on a known, finite observation space $O$, a known distribution on $O$ for each state $s$, $p_s$, and known transition probabilities $\pi_i,j$, with known initial probabilities for each state $s$, $\delta_s$. We let $[k] = \{1,2,...,k\}$. The goal is, given a sequence of T observations $(y_n)_{n \in [T]}$, $y_i \in O$, to find the sequence of states $(x_n)_{n \in [T]}$ satisfying
+The Viterbi algorithm for a standard Discrete Time Hidden Markov Model relies on a known, finite observation space $O$, a known distribution on $O$ for each state $s$, $p_s$, and known transition probabilities $\pi_i,j$, with known initial probabilities for each state $s$, $\delta_s$. We let $[k] = \{1,2,...,k\}$. The goal is, given a sequence of $T$ observations $(y_n)_{n \in [T]}$, $y_i \in Y$, to find the sequence of states $(x_n)_{n \in [T]}$ satisfying
 
 $$
 \mathbf{x} = \argmax_{\widehat{\mathbf{x}} \in S^T} \pr(\mathbf{\widehat{x}} | \mathbf{y})
@@ -75,7 +75,7 @@ $$
 V_{1,s} = \pr (y_1|s)\pr(x_1=s)
 $$
 
-Recall that $\delta_s$ is the probability of being in state $s$ at time 1, ie $\pr(x_1=s)$, and that $p_s(y_1)$ is the probability of observing $y_1$ from state $s$, ie $\pr (y_1|s)$. Both of these parameters are estimated by the Baum-Welch algorithm, hence,
+Recall that $\delta_s$ is the probability of being in state $s$ at time 1, ie $\pr(x_1=s)$, and that $p_s(y_1)$ is the probability of observing $y_1$ from state $s$, ie $\pr (y_1|s)$. In practice, these won't be known, but estimates of them will be given by the Baum-Welch algorithm, so we will use their maximum-likelihood estimates to give us,
 
 $$
 V_{1,s} = p_s(y_1)\delta_s
@@ -201,10 +201,10 @@ As a final note, we can further refine the fitted model based on the results of 
 %Put python stuff somewhere else
 
 The algorithm was written in R and added to the pre-existing HiddenMarkov \cite{hiddenmarkov}
-package as acquired from The University of Bristol's CRAN Mirror, which was then recompiled to be loaded into an R environment. A Python script was written to call into this library from a more conveneint language using RPy2 %cite
+package, which was then recompiled to be loaded into an R environment. A Python script was written to call into this library from a more conveneint language using RPy2 %cite
 , with mathematical, statistical and visualisation functions loaded from matplotlib\cite{matplotlib}, NumPy and SciPy.
 
-As before, we first simulate a model, then see if we can recover it. The model we simulated had the following parameters;
+As before, we first simulate a model, then see if we can recover it. The simulated model had the following parameters;
 
 \begin{align*}
 (\lambda_1,\lambda_2,\lambda_3) &= (0.01,0.5,2)\\
