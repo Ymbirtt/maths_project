@@ -13,9 +13,13 @@ $$
 \end{cases}
 $$
 
-And we simulate the process for 100 hours, producing a trace such as;
+And we simulate the process for 100 hours, producing a trace such as the one displayed in Figure \ref{trace_nonhom1}.
 
-%Put trace here
+\begin{figure}[h]
+\includegraphics[width = \textwidth]{./images/trace_nonhom1.png}
+\caption{A trace of an inhomogeneous Poisson process. Time flows along the x-axis, and the value on the y-axis shows the number of emissions seen thus far. A total of 575 emissions were observed.}
+\label{trace_nonhom1}
+\end{figure}
 
 We can fit a step function by observing multiple traces of these poisson processes, taking the differences in emission times, then attempting to cluster them with the k-means algorithm%cite
 . The average number of emissions per trace is the integral of the rate wrt time over the time interval for which we observe, ie if $N$ is the number of observed emissions in a single trace,
@@ -24,9 +28,13 @@ $$
 \mathbb{E}(N) = \int^{100}_0 \lambda(t) \; dt = 600
 $$
 
-So if we run out 6 traces we'll observe roughly $3,600$ emissions, a little more than our real data set. Fitting a function to these gives us the results from %diagram
+So if we run out 6 traces we'll observe roughly $3,600$ emissions, a little more than our real data set. Fitting a function to these gives us the results from Figure \ref{fit_nonhom1}
 
-%Diagram here
+\begin{figure}[h]
+\includegraphics[width = \textwidth]{./images/fit_nonhom1.png}
+\caption{An attempt to recover the rate function used to generate Figure \ref{fit_nonhom1}}
+\label{fit_nonhom1}
+\end{figure}
 
 Eyeballing this, we see that it's not a terrible fit in this first attempt, but if we try a more complex rate function, %diagram
 happens
@@ -217,7 +225,13 @@ Q &= \bordermatrix{      & \lambda_1 & \lambda_2 & \lambda_3\cr
 \delta &= \left(\frac{1}{3},\frac{1}{3},\frac{1}{3}\right)
 \end{align*}
 
-Because the expected course of an MMPP is somewhat harder to calculate, this one was just simulated for 10,000 hours. The resulting trace can be seen in %diagram.
+Because the expected course of an MMPP is somewhat harder to calculate, this one was just simulated for 10,000 hours. The resulting trace can be seen in Figure \ref{trace_mmpp1}.
+
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/trace_mmpp1.png}
+\caption{A trace of an MMPP with the states shaded in colour - green for $\lambda_1$, red for $\lambda_2$ and yellow for $\lambda_3$}
+\label{trace_mmpp1}
+\end{figure}
 
 Running the Baum-Welch algorithm over the trace with a known state size of 3 for 208 iterations, at which the model converged sufficiently, gives us the following predictions, rounded to 2 significant figures;
 
@@ -234,7 +248,13 @@ Q &= \bordermatrix{      & \lambda_1 & \lambda_2 & \lambda_3\cr
 
 On inspection, most these parameters give a reasonable approximation of the originals, but $\delta$ seems to be well off the mark. The reason for this is fairly simple - the simulated trace had to start somewhere, and in this case it started in state 1. The algorithm was only given one trace, so to minimise the probability of error, it estimated that the underlying CTMP always starts in the state in which it was estimated to start. The initial distribution of the underlying CTMP isn't hugely relevant, however. We're interested in how the user tweets in the long term, and regardless of initial distribution this markov chain will reach an invariant distribution.
 
-Running the modified viterbi algorithm over the process gives %diagram
+Running the modified viterbi algorithm over the process gives the estimate in Figure \ref{fit_mmpp1}
+
+\begin{figure}[h!]
+\includegraphics[width = \textwidth]{./images/fit_mmpp1.png}
+\caption{The same trace as Figure \ref{trace_mmpp1}, but with the shading to match estimated states, rather than actual states; green for $\lambda_1$, red for $\lambda_2$ and yellow for $\lambda_3$}
+\label{fit_mmpp1}
+\end{figure}
 
 Comparing the estimated path to the original in a way that clearly displays the results seems daunting, but we can do this in what I find a fairly beautiful way by simply aligning the two traces along the same scale, rendering them as bitmaps, then taking the difference in the colours between the two images using GIMP
 %gimp.org
@@ -242,8 +262,6 @@ Comparing the estimated path to the original in a way that clearly displays the 
 . Any black pixels are locations where the original two images match perfectly, all others are mistakes %diagram goes somewhere near here
 . The plot in figure %whatever
 is 89.2\% black, so my estimated model matches the simulation 89.2\% of the time. Given the inaccuracy of $\lambda_1$'s estimate from the Baum-Welch algorithm, I found this accuracy impressively high.
-
-%diagram
 
 Now that we've verified that our algorithms are capable of recovering known MMPPs to a high degree of accuracy, it's time to pump our data into it.
 
@@ -317,7 +335,6 @@ S &= \{1,2,3,4,5\}\\
     0.051 & 0.052 & 0.579 & 0.156 & 0.161 \\
     0.176 & 0.250 & 0.286 & 0.260 & 0.027 \\
     0.007 & 0.000 & 0.196 & 0.012 & 0.785
-    
     \end{matrix}
 \right)\\
 Y &= \mathbb{R}^{+}\\
