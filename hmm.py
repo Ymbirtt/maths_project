@@ -30,8 +30,12 @@ def poisson(lamb, t0, tmax):
         return []
 
 def shadeStates(xs):
-    colours = {1:'r',2:'y'  ,3:'g', 4:'c', 5:'k', 0:'b', 0.5:'r', 0.01:'g'}
+    colours = {1:'r',2:'y',3:'g'}
     ys = xs
+    
+    ps = [Rectangle((0,0),1,1,fc = colours[x], alpha = 0.25) for x in range(1,4)]
+    labels = ["Rate " + str(x) for x in range(1,4)]
+    legend(ps,labels, loc = 2)
     
     for n in range(1,len(ys)):
         print "shading ", n 
@@ -49,7 +53,7 @@ def plotPoisson(xs, args=''):
     plot(xs,ys,args)
     xlabel("Time")
     ylabel("Emissions")
-    annotate(ys[-1], (xs[-1],ys[-1]), xytext = (xs[-1]+1,ys[-1]))
+    annotate(ys[-1], (xs[-1],ys[-1]), xytext = (xs[-1]+5,ys[-1]))
 
 
 def plotPoisson2D(xs):
@@ -290,6 +294,7 @@ for _ in range(sims):
 
 model = fitmmpp(process,3)
 plotPoisson(process)
+ts = [(t,states.index(s)+1) for (t,s) in ts]
 shadeStates(ts)
 xlim(0,t_max)
 savefig("./write-up/images/trace_mmpp1.svg")
