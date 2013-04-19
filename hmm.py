@@ -273,7 +273,7 @@ rates  = {
 
 state = choice(states)
 
-t_max = 5000
+t_max = 6000
 sims = 1
 
 t=0
