@@ -306,18 +306,22 @@ From this point, it is starting to seem like the tweeter does not follow an MMPP
 So we go through the same procedure again - the intuitive 3 states didn't result in anything worthwhile, so we apply the old BIC test again to arrive at an optimum of 5 states and a BIC of 1446, resulting in a DTHMM with the following parameters;
 
 \begin{align*}
-S &= \{1,2\}\\
-\delta &= (1,0)\\
+S &= \{1,2,3,4,5\}\\
+(\lambda_1,\lambda_2,\lambda_3,\lambda_4,\lambda_5) &= (0.108, 1.18, 4.27, 14.8, 32.4)
+\delta &= (1,0,0,0,0)\\
 \Pi &= 
 \left(
-	\begin{matrix}
-	0.9 & 0.1 \\
-	0.1 & 0.9
-	\end{matrix}
+    \begin{matrix}
+    0.295 & 0.380 & 0.000 & 0.312 & 0.013 \\
+    0.153 & 0.573 & 0.006 & 0.268 & 0.000 \\
+    0.051 & 0.052 & 0.579 & 0.156 & 0.161 \\
+    0.176 & 0.250 & 0.286 & 0.260 & 0.027 \\
+    0.007 & 0.000 & 0.196 & 0.012 & 0.785
+    
+    \end{matrix}
 \right)\\
-O &= \mathbb{R}^{+}\\
-x \in O => p_1(x) &= \frac{1}{6}\\
-x \in O \setminus \{6\} => p_2(x) &= \frac{1}{5}
+Y &= \mathbb{R}^{+}\\
+s \in S, y \in Y => p_s(y) &= \lambda_s e^{-\lambda_sy}\\
 \end{align*}
 
 % More stuff here
@@ -354,11 +358,11 @@ S &= \{1,2,3\}\\
      0.000 & 0.865 & 0.135
 	\end{matrix}
 \right)\\
-O &= \mathbb{R}^{+}\\
-x \in O => f_s(x) &= \frac{\exp({-\frac{(x-\mu_s)^2}{2\sigma_s^2}})}{\sigma_s\sqrt{2\pi}}
+Y &= \mathbb{R}\\
+s \in S => p_s(y) &= \frac{\exp({-\frac{(y-\mu_s)^2}{2\sigma_s^2}})}{\sigma_s\sqrt{2\pi}}
 \end{align*}
 
-Given a sequence of emissions from this DTHMM, $\mathbf{x}$, the inter-arrival times are then $\mathbf{t}$ with $t_i = e^{x_i}$. Perhaps a little strangely, shading the states onto our graph as in figure %fig
-gives a less obvious seasonality to the tweeter's behavior. We still have observable and highlighted bursts as well as some regularity to the user's sleeping patterns, but they're less obvious here than with the MMPP. More work would certainly throw up more results, perhaps this requires a continuous time model for such things to be seen, or perhaps the number of states is too small, 
+Given a sequence of emissions from this DTHMM, $\mathbf{y}$, the inter-arrival times are then $\mathbf{t}$ with $t_i = e^{y_i}$. Perhaps a little strangely, shading the states onto our graph as in figure %fig
+gives a less obvious seasonality to the tweeter's behavior. We still have observable and highlighted bursts as well as some regularity to the user's sleeping patterns, but they're less obvious here than with the MMPP. More work would certainly throw up more results, perhaps this requires a continuous time model for such things to be seen,  
 
 %Results go here
