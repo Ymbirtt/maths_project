@@ -246,10 +246,10 @@ def testGoodness(ss,model):
             #r('curve(dexp(x, rate ='+ str(1/mu) + '), add=TRUE, col = "red")')
             #r['dev.off']()
             
-            #r['svg']('./write-up/images/density_mmpp2_state' + str(x+1) + '.svg')
+            r['svg']('./write-up/images/density_mmpp3_state' + str(x+1) + '.svg')
             r['plot'](d, main="Estimated probability density of state " + str(x+1), col = "blue", xlab = "log x")
             r('curve(dnorm(x, mean ='+ str(mean(xs)) + ', sd =' + str(std(xs)) +'), add=TRUE, col = "red")')
-            #r['dev.off']()
+            r['dev.off']()
             #r['print'](r['ks.test'](xs,'pexp',1/mean(xs)))
             r['print'](r['ks.test'](xs,'pnorm',mean(xs), std(xs)))
             print "Estimated mean, ", mus[x]
@@ -292,25 +292,25 @@ for _ in range(sims):
         state = ss[i]
         ts.append((t,state))
 
-model = fitmmpp(process,3)
-plotPoisson(process)
-ts = [(t,states.index(s)+1) for (t,s) in ts]
-shadeStates(ts)
-xlim(0,t_max)
-savefig("./write-up/images/trace_mmpp1.svg")
-show()
-V = r['Viterbi'](model)
-r['print'](model)
-raw_input()
-plotPoisson(process)
-print "shading states"
-print V
-xlim(0,t_max)
-shadeStates(zip(process,list(V)))
-print "done!"
-savefig("./write-up/images/fit_mmpp1.svg")
-show()
-raw_input()
+#model = fitmmpp(process,3)
+#plotPoisson(process)
+#ts = [(t,states.index(s)+1) for (t,s) in ts]
+#shadeStates(ts)
+#xlim(0,t_max)
+#savefig("./write-up/images/trace_mmpp1.svg")
+#show()
+#V = r['Viterbi'](model)
+#r['print'](model)
+#raw_input()
+#plotPoisson(process)
+#print "shading states"
+#print V
+#xlim(0,t_max)
+#shadeStates(zip(process,list(V)))
+#print "done!"
+#savefig("./write-up/images/fit_mmpp1.svg")
+#show()
+#raw_input()
 print "Reading data..."
 
 tau = getDates("./twitterextract")
