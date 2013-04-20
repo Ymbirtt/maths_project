@@ -44,15 +44,15 @@ Eyeballing this, we see that it's not a terrible fit in this first attempt, but 
 \label{fit_nonhom2}
 \end{figure}
 
-We could instead attempt to fit a polynomial function but this requires more parameters, and ignores a somewhat worse problem, visible in %figure
+We could instead attempt to fit a polynomial function but this requires more parameters, and ignores a somewhat worse problem, visible in Figure \ref{raw_data_zoomed}
 
-% Trace of one day, showing bursts
+\begin{figure}[h]
+\includegraphics[width = \textwidth]{./images/raw_data_zoomed.png}
+\caption{A zoomed in plot of the raw data from figure \ref{raw_data}, showing bursts}
+\label{raw_data_zoomed}
+\end{figure}
 
-We can see an important feature between 
-%time1
-and
-%time2
-. We'll call this a ``burst". The user is tweeting very rapidly for a short period of time. These bursts occur at random times throughout the day, and last for random lengths of time, but they all take on the same form. This heavily restricts our function. We can't simply say that at some particular time there is always a burst, but we also cannot deny their existence by smoothing them out since these bursts, by their very nature, will account for the majority of the observed tweets.
+We can see an important feature between hours 10 and 15 of day 252. We'll call this a ``burst". The user is tweeting very rapidly for a short period of time. These bursts occur at random times throughout the day, and last for random lengths of time, but they all take on the same form. This heavily restricts our function. We can't simply say that at some particular time there is always a burst, but we also cannot deny their existence by smoothing them out since these bursts, by their very nature, will account for the majority of the observed tweets.
 
 Clearly, a different approach is needed.
 
