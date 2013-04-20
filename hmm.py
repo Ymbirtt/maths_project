@@ -322,6 +322,11 @@ tau = tau[0][1:]
 times = tau
 tau = malleate(tau)
 
+plotPoisson2D(times[50:])
+ylim(250,257)
+show()
+raw_input()
+
 print "Fitting mmpp..."
 
 model = fitdthmm(tau,3, maxiters = 1000)
