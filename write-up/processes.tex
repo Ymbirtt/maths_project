@@ -148,12 +148,13 @@ Note that $N$ is the associating counting process - a stochastic process - not a
   \node[state]         (1)  [right of = 0]     {1};
   \node[state]         (2)  [right of = 1]     {2};
   \node[state]         (3)  [right of = 2]     {3};
+  \node                (etc)[right of = 3, node distance = 2cm]     {};
 
   \path  (0) edge   node {$\lambda$} (1)
          (1) edge   node {$\lambda$} (2)
          (2) edge   node {$\lambda$} (3)
   ;
-  \draw  (0.east) -- ([xshift=1ex]0.east);
+  \draw[dashed] (3) -- (etc);
 \end{tikzpicture}
 
 Implicit from this, we see that the process can only increase - once leaving a state, we never return, so we can define the emission times $t_n$, as $t_n = \min\{t | N(t)\geqslant n\}$. We can also define $\tau_n = t_n-t_{n-1}$, the inter-arrival times for the $n^{th}$ jump for $n \{1,2,...\}$. We refer to these as emissions and arrivals since a Poisson Process generally models a counting process whereby we record the times at which we observe things happening, eg the times at which radioactive particles are detected from a radioactive material. The most crucial property of the Poisson process for this work, implicit from the simulation algorithm above, is that
@@ -192,8 +193,7 @@ $$
 \forall i \in \mathbb{N}, t,\delta \in \mathbb{R}^{+}, \pr (N(t+\delta) = i+1 | N(t) = i) = \lambda(t) \delta + o(\delta)
 $$
 
-Since this process is no longer Markovian, it makes little sense to draw its transition rate graph, however it remains a powerful tool. Simulating one of these is, however, less simple. The algorithm for doing so is based on Bernoulli thinning %cite
-and is equivalent to algorithm \ref{algthin}
+Since this process is no longer Markovian, it makes little sense to draw its transition rate graph, however it remains a powerful tool. Simulating one of these is, however, less simple. The algorithm for doing so is based on Bernoulli thinning \cite{thinning} and is equivalent to algorithm \ref{algthin}
 
 \begin{algorithm}
 \SetAlgoLined
