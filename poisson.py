@@ -52,11 +52,11 @@ def plotPoisson(xs, args=''):
     
     l = len(xs)-1
 
-    ys = [x for x in range(len(xs)) for _ in (0,1)][:-1]
+    ys = [x/50 for x in range(len(xs)) for _ in (0,1)][:-1]
     
     xs = [xs[0]]+[x for x in xs[1:] for _ in (0,1)]
 
-    plot(xs,ys,args)
+    plot(xs,ys,args, label = "Estimated integral")
     xlabel("Time")
     ylabel("Emissions")
     annotate(ys[-1], (xs[-1],ys[-1]), xytext = (xs[-1]+1,ys[-1]))
@@ -84,32 +84,48 @@ def lookup(x,xs,width):
     return xs[index][1]
 
 def foo(x):
-    return 0.1*sin(x/5)+0.1
+    return sin(x/5)+1
     
 def baz(x):
     if 30<x<50:
         return 10
-    else :
+    else:
         return 5
+
+def int_baz(x):
+    if x<30:
+        return 5*x
+    if x<50:
+        return 10*(x-30)+150
+    return 5*(x-50)+350
+    
+def int_foo(x):
+    return -5*cos(x/5)+x+5
     
 def main():
     ys = []
-    samples = 5
+    samples = 50
     bins = 100
     
     tmax = 100
-    lmax = 11
+    lmax = 2
     
     for _ in range(samples):
-        xs = poissonFun2(lmax,baz,tmax)
+        xs = poissonFun2(lmax,foo,tmax)
         #plotPoisson(xs)
+        #plot([int_foo(x) for x in range(0,tmax)],'red')
         #show()
         ys=xs[1:]+ys
         
     #show()
     ys.sort()
-    #plotPoisson(ys)
-    #show()
+    plotPoisson(ys)
+    print len(ys)
+    plot([int_foo(x) for x in range(0,tmax)],'red', label = "True integral")
+    legend()
+    show()
+ 
+    exit()
  
     ys,_,_= hist(ys,bins)
     cla()
