@@ -13,7 +13,7 @@ $$
 \end{cases}
 $$
 
-Thge process was simulated for 100 hours, producing a trace such as the one displayed in Figure \ref{trace_nonhom1}.
+The process was simulated for 100 hours, producing a trace such as the one displayed in Figure \ref{trace_nonhom1}.
 
 \begin{figure}[h]
 \includegraphics[width = \textwidth]{./images/trace_nonhom1.png}
@@ -35,7 +35,10 @@ So if we run out 6 traces we'll observe roughly $3,600$ emissions, a little more
 \label{fit_nonhom1}
 \end{figure}
 
-Eyeballing this, we see that it's not a terrible fit in this first attempt, but if we try a more complex rate function, a situation similar to Figure \ref{fit_nonhom2} happens. The estimations are well off the mark.
+Eyeballing this, we see that it's not a terrible fit in this first attempt, but if we try a more complex rate function, a situation similar to Figure \ref{fit_nonhom2} happens. The estimations are well off the mark. We could instead attempt to fit a polynomial function with maximum likelihood or least squares or similar, but this requires more parameters, and ignores a somewhat worse problem, visible in Figure \ref{raw_data_zoomed}. We can see an important feature between hours 10 and 15 of day 252. We'll call this a ``burst". The user is tweeting very rapidly for a short period of time. These bursts occur at random times throughout the day, and last for random lengths of time, but they all take on the same form. This heavily restricts our function. We can't simply say that at some particular time there is always a burst, but we also cannot deny their existence by smoothing them out since these bursts, by their very nature, will account for the majority of the observed tweets.
+
+Clearly, a different approach is needed.
+
 
 \begin{figure}[h]
 \includegraphics[width = \textwidth]{./images/fit_nonhom2.png}
@@ -43,17 +46,11 @@ Eyeballing this, we see that it's not a terrible fit in this first attempt, but 
 \label{fit_nonhom2}
 \end{figure}
 
-We could instead attempt to fit a polynomial function but this requires more parameters, and ignores a somewhat worse problem, visible in Figure \ref{raw_data_zoomed}
-
 \begin{figure}[h]
 \includegraphics[width = \textwidth]{./images/raw_data_zoomed.png}
 \caption{A zoomed in plot of the raw data from figure \ref{raw_data}, showing bursts}
 \label{raw_data_zoomed}
 \end{figure}
-
-We can see an important feature between hours 10 and 15 of day 252. We'll call this a ``burst". The user is tweeting very rapidly for a short period of time. These bursts occur at random times throughout the day, and last for random lengths of time, but they all take on the same form. This heavily restricts our function. We can't simply say that at some particular time there is always a burst, but we also cannot deny their existence by smoothing them out since these bursts, by their very nature, will account for the majority of the observed tweets.
-
-Clearly, a different approach is needed.
 
 \clearpage
 
@@ -288,7 +285,7 @@ From this distance, we already see at least some kind of sensible behavior - the
 
 We can evaluate this model by performing a Kolmogorov-Smirnov test on the data for each state. We take our null hypothesis to be that the emissions within each state follow an exponential distribution whose rate matches the observed rate. Running this test, we find, however, that they very much do not - the p-values for each state were less than $2.2 \times 10^{16}$ - to say that this is low would be an understatement.
 
-Whilst 3 states makes sense intuitively, there's no reason why this is definitely the case, so let's try different numbers of states. We can find the optimal number based on the Bayesian Information Criterion \cite{BIC}. Given an estimated model, we can define the Bayesian Information Criterion, $BIC$, as
+Whilst 3 states makes sense intuitively, there's no reason why this is definitely the case, so let's try different numbers of states. We can find the optimal number based on the Bayesian Information Criterion \cite{bic}. Given an estimated model, we can define the Bayesian Information Criterion, $BIC$, as
 
 $$
 BIC = -2 \ln L + k \ln n
@@ -326,7 +323,7 @@ Unfortunately, the Kolmogorov-Smirnov tests still fail - the greatest p-value fo
 
 From this point, it is starting to seem like the tweeter does not follow an MMPP, but there is one last thing we can attempt in this vein. A DTHMM can still have a continuous observation space and all the previous methods will work, just with probability density in place of probability. Rather than observing a series of times, we will instead observe a series of time differences, and look for any small number of states that lets us gather these differences into the same exponential distribution. The results from such a model will be similar, but lose some information about how long our tweeter actually spends in each state. The crucial difference between the two is that in an MMPP emissions and transitions take place along the same timeline - compare the Viterbi algorithms for both the MMPP and DTHMM, and note that the transition probabilities between a DTHMM's states do not depend on the observed emissions, whilst the transition probabilities in the MMPP version do.
 
-So we go through the same procedure again - the intuitive 3 states didn't result in anything worthwhile, so we apply the old BIC test again to arrive at an optimum of 5 states and a BIC of 1446, resulting in a DTHMM with the following parameters;
+So we go through the same procedure again - the intuitive 3 states didn't result in anything worthwhile, so we apply the BIC-based method again to arrive at an optimum of 5 states and a BIC of 1446, resulting in a DTHMM with the following parameters;
 
 \begin{align*}
 S &= \{1,2,3,4,5\}\\
