@@ -2,7 +2,7 @@ Now that we've defined a selection of random processes, we can start discussing 
 
 \section{Fitting a Non-Homogeneous Poisson Process}
 
-The simplest place to start would be a homogeneous Poisson process, though a cursory glance at our data suggests that this would not be appropriate - the user is clearly tweeting at different rates at different times of day, and is not homogeneous. Let's try a non-homogeneous poisson process. We assume that the tweeter emits tweets according to an inhomogeneous poisson process, and attempt to find its rate function. For convenience, we'll describe our time in hours, though naturally the units could be arbitrary. We start by simulating a poisson process of known rate function, and seeing how well we can recover it. We start with a simple step function,
+The simplest place to start would be a homogeneous Poisson process, though a cursory glance at our data suggests that this would not be appropriate - the user is clearly tweeting at different rates at different times of day, and is not homogeneous. Let's try a non-homogeneous poisson process. We start by simulating a poisson process of known rate function, and seeing how well we can recover it. Let the rate function be defined as:
 
 $$
 \lambda(t) = 
@@ -13,7 +13,7 @@ $$
 \end{cases}
 $$
 
-And we simulate the process for 100 hours, producing a trace such as the one displayed in Figure \ref{trace_nonhom1}.
+Thge process was simulated for 100 hours, producing a trace such as the one displayed in Figure \ref{trace_nonhom1}.
 
 \begin{figure}[h]
 \includegraphics[width = \textwidth]{./images/trace_nonhom1.png}
@@ -55,20 +55,20 @@ We can see an important feature between hours 10 and 15 of day 252. We'll call t
 
 Clearly, a different approach is needed.
 
+\clearpage
+
 \section{Fitting a Markov-Modulated Poisson Process}
 
 An MMPP seems ideal then, capturing the simplicity of a step function, and letting us model the idea of randomly distributed bursts throughout a day. Indeed, several authors have postulated that such a model would be ideal for simulating human behavior %lots of citations go here
 but there have so far been no actual quantifiable studies of its relevance. Part of the reason for this is likely the lack of algorithms.
 
-Fitting a Hiddin Markov Model of any kind relies on two main algorithms, Baum-Welch \cite{baumwelch}
-and Viterbi\cite{viterbi}. The Baum-Welch Algorithm is an expectation-maximisation algorithm for finding the transition probabilities/rates and the emission probabilities, given a set of possible emissions, a number of states to fit and an observed sequence of emissions. Viterbi will take an observed sequence of emissions and the parameters of an HMM, and produce the most likely state in which each of these emissions happened. The HiddenMarkov package hosted on CRAN \cite{hiddenmarkov}
-is the only easily-accessible Hidden Markov Model package which supports the Markov Modulated Poisson Process, but does not contain any implementation of the Viterbi algorithm. We have two ways of working around this, either write our own or discretise the process.
+Fitting a Hiddin Markov Model of any kind relies on two main algorithms, Baum-Welch \cite{baumwelch} and Viterbi \cite{viterbi}. The Baum-Welch Algorithm is an expectation-maximisation algorithm for finding the transition probabilities/rates and the emission probabilities, given a set of possible emissions, a number of states to fit and an observed sequence of emissions. The algorithm runs iteratively over the observed data, incrementally increasing the likelihood of the estimated model given the observations, as such it needs an artificially defined stopping condition. In this project, we'll either use some fixed number of iterations, or stop when the log-likelihood increases by less than $10^{-6}$ between some pair of iterations. Viterbi will take an observed sequence of emissions and the parameters of an HMM, and produce the most likely state in which each of these emissions happened. The HiddenMarkov package hosted on CRAN \cite{hiddenmarkov} is the only easily-accessible Hidden Markov Model package which supports the Markov Modulated Poisson Process, but does not contain any implementation of the Viterbi algorithm. We have two ways of working around this, either write our own or discretise the process.
 
 Since the times between emissions in an MMPP are usually exponentially distributed, we could work in discrete time by letting $y_t$ be the time between the $t^{th}$ and $(t+1)^{th}$ emissions, though this sacrifices some information. We no longer consider the possibility of making multiple transitions between emissions, and ignore the intrinsic link between the times between emissions and the times between state transitions, but this model may also yield some useful results. We'll be trying out both of them.
 
 \subsection{A derivation of the classical Viterbi algorithm}
 
-The Viterbi algorithm for a standard Discrete Time Hidden Markov Model relies on a known, finite observation space $O$, a known distribution on $O$ for each state $s$, $p_s$, and known transition probabilities $\pi_i,j$, with known initial probabilities for each state $s$, $\delta_s$. We let $[k] = \{1,2,...,k\}$. The goal is, given a sequence of $T$ observations $(y_n)_{n \in [T]}$, $y_i \in Y$, to find the sequence of states $(x_n)_{n \in [T]}$ satisfying
+The Viterbi algorithm for a standard Discrete Time Hidden Markov Model relies on a known, finite observation space $Y$, a known distribution on $Y$ for each state $s$, $P_s$, and known transition probabilities $\pi_i,j$, with known initial probabilities for each state $s$, $\delta_s$. The goal is, given a sequence of $T$ observations $(y_n)_{n \in [T]}$, $y_i \in Y$, to find the sequence of states $(x_n)_{n \in [T]}$ satisfying
 
 $$
 \mathbf{x} = \argmax_{\widehat{\mathbf{x}} \in S^T} \pr(\mathbf{\widehat{x}} | \mathbf{y})
@@ -85,20 +85,20 @@ $$
 Recall that $\delta_s$ is the probability of being in state $s$ at time 1, ie $\pr(x_1=s)$, and that $p_s(y_1)$ is the probability of observing $y_1$ from state $s$, ie $\pr (y_1|s)$. In practice, these won't be known, but estimates of them will be given by the Baum-Welch algorithm, so we will use their maximum-likelihood estimates to give us,
 
 $$
-V_{1,s} = p_s(y_1)\delta_s
+V_{1,s} = P_s(y_1)\delta_s
 $$
 
 Given $V_{\tau,s}$ for $\tau < t$, we can find $V_{t,s}$ by noting that the Markov Property implies a form of memorylessness. Given the present, the future is conditionally independent of the past. As such, we need only consider $V_{t-1,s}$ for each $s$, as well as our known parameters. 
 
-The probability of the most likely path that leads us to state $s$ at time $t$ is given by the probability of the most likely path that led us to $s'$ at time $t-1$, and then jumped to $s$ at time $t$, and then emitted $y_t$ from state $s$. The probability of jumping from $s'$ to $s$ is $\pi_{s',s}$. The probability of emitting $y_t$ from state $s$ is $p_s(y_t)$. The probability of the most likely path that leads us to $s'$ at time $t-1$ is $V_{t-1,s'}$. Hence,
+The probability of the most likely path that leads us to state $s$ at time $t$ is given by the probability of the most likely path that led us to $s'$ at time $t-1$, and then jumped to $s$ at time $t$, and then emitted $y_t$ from state $s$. The probability of jumping from $s'$ to $s$ is $\pi_{s',s}$. The probability of emitting $y_t$ from state $s$ is $P_s(y_t)$. The probability of the most likely path that leads us to $s'$ at time $t-1$ is $V_{t-1,s'}$. Hence,
 
 $$
-V_{t,s} = p_s(y_t) \max_{s'\in S} (\pi_{s',s}V_{t-1,s'})
+V_{t,s} = P_s(y_t) \max_{s'\in S} (\pi_{s',s}V_{t-1,s'})
 $$
 
-Using this recurrence, we can find $V_{t,s} \forall t \in [T]$ by a standard dynamic programming algorithm.
+Using this recurrence, we can find $V_{t,s} \forall t \in [T], s \in S$ by a standard dynamic programming algorithm.
 
-From here, we can then work backwards to find the Viterbi path. $x_T = \argmax_{s \in S} V_{t,s}$ - the most likely final state is the state in which the path of maximum probability ends.
+From here, we can then work backwards to find the Viterbi path. $x_T = \argmax_{s \in S} V_{T,s}$ - the most likely final state is the state in which the path of maximum probability ends.
 
 Let
  
@@ -106,9 +106,9 @@ $$
 T_{t,s} = \argmax_{s'\in S}(\pi_{s',s}V_{t-1,s'})
 $$
 
-Ie, $T_{t,s}$ is the state from which we are most likely to have come at time $t-1$ given that we are in state $s$ at time $t$, we can then see that $x_{t-1} = T{x_t,t}$. Note the similarities in the definitions of $V$ and $T$ - both can be calculated simultaneously - $V$ is the maximum, $T$ is the argument that maximises. $T_{1,s}$ is never used, so need never be defined. 
+Ie, $T_{t,s}$ is the state from which we are most likely to have come at time $t-1$ given that we are in state $s$ at time $t$, we can then see that $x_{t-1} = T_{x_t,t}$. Note the similarities in the definitions of $V$ and $T$ - both can be calculated simultaneously - $V$ is the maximum, $T$ is the argument that maximises. $T_{1,s}$ is never used, so need never be defined. 
 
-Since we have an expression for $x_{t-1}$ in terms of $x_t$, and for $x_T$, we can then recover $\mathbf{x}$, the Viterbi Path. \ref{algvitdthmm} defines this algorithm.
+Since we have an expression for $x_{t-1}$ in terms of $x_t$ and an expression for $x_T$, we can then recover $\mathbf{x}$, the Viterbi Path. Algorithm \ref{algvitdthmm} gives this in full.
 
 \begin{algorithm}
 \SetAlgoLined
@@ -140,7 +140,7 @@ Since we have an expression for $x_{t-1}$ in terms of $x_t$, and for $x_T$, we c
 
 \subsection{A First Approximation of the Viterbi Algorithm for the Markov-Modulated Poisson Process}
 
-Recall the dependencies for the DTHMM Viterbi Algorithm. We require knowledge of a finite $O$, $p_s$ for each $s$, and $\pi_{ij}$ for each pair of states $i,j$.
+Recall the dependencies for the DTHMM Viterbi Algorithm. We require knowledge of a finite $Y$, $P_s$ for each $s$, and $\pi_{ij}$ for each pair of states $i,j$.
 
 In an MMPP, we observe a Poisson Process of rate randomly varying between various known rates - the rates being our states. Let $S = \{\lambda_1,...,\lambda_m\}$. Our observations can be interpreted as exponential random variables of these rates. Let $\tau_0 = 0$, and $\tau_i$ be the time of the $i^{th}$ poisson emission for $i \in [n]$. Let $y_i = \tau_i-\tau_{i-1}$ for $i \in [n]$. Given that the underlying CTMC was in state $\lambda_s$ at time $\tau_i$, we have that $y_i \sim Exp (\lambda_s)$. From the properties of the generic CTMC, the probability that the process is in state $j$ at time $\tau_i$ given that it was in state $i$ at time $\tau_{i-1}$ is given by $(e^{Qy_i})_{\lambda_{i},\lambda_{j}}$. To ease notation, we'll write this as $(e^{Qy_i})_{i,j}$, omitting the $\lambda$s.
 
@@ -201,12 +201,12 @@ The reason that this is an approximation is the fact that the algorithm assumes 
 
 This first approximation is in fact very powerful. Approximating in this way assumes that multiple transitions between emissions are rare, alternatively  that emissions within each state are more frequent than transitions out of that state. If the converse is true - transitions out of the state are more frequent than emissions within the state - then we have an odd situation whereby some state is frequently entered and then left again with no emissions happening. Whilst such states are perfectly valid and can indeed exist in a theoretical MMPP, detecting one in reality with no prior knowledge is very difficult.
 
-As a final note, we can further refine the fitted model based on the results of the Viterbi algorithm by changing the estimated rate of each state to the observed rate of the emissions estimated to occur in that state. By the nature of these estimation algorithms, these results are likely to differ, and with a large sample size what we observe is usually closer to the truth than what we assert.
+As a final note, we can further refine the fitted model based on the results of the Viterbi algorithm by changing the estimated rate of each state to the observed rate of the emissions estimated to occur in that state. By the nature of these estimation algorithms, these results are likely to differ, and with a large sample size what we observe is usually closer to the truth than what we assert. In practice, if Baum Welch gives a good estimation of the underlying MC, the difference between the two is minor.
 
 \subsection{Applying the Algorithm}
 
 The algorithm was written in R and added to the pre-existing HiddenMarkov \cite{hiddenmarkov}
-package, which was then recompiled to be loaded into an R environment. A Python script was written to call into this library from a more conveneint language using RPy2 \cite{rpy}, with mathematical, statistical and visualisation functions loaded from matplotlib\cite{matplotlib}, and SciPy\cite{scipy}.
+package, which was then recompiled to be loaded into an R environment. A Python script was written to call into this library from a more convenient language using RPy2 \cite{rpy}, with mathematical, statistical and visualisation functions loaded from matplotlib \cite{matplotlib}, and SciPy \cite{scipy}.
 
 As before, we first simulate a model, then see if we can recover it. The simulated model had the following parameters;
 
@@ -264,7 +264,7 @@ Comparing the estimated path to the original in a way that clearly displays the 
 
 Now that we've verified that our algorithms are capable of recovering known MMPPs to a high degree of accuracy, it's time to pump our data into it.
 
-The data was preprocessed such that rather than recording exact times and dates of tweets, it instead recorded time since the beginning of the observation in hours at which each tweet occured. This was then fed into a HiddenMarkov MMPP, over which BaumWelch and Viterbi were then run based on the assumption of 3 states. The resulting model was as follows:
+The data were preprocessed such that rather than recording exact times and dates of tweets, they instead recorded times since the beginning of the observation in hours at which each tweet occured. This sequence was then fed into a HiddenMarkov MMPP, over which BaumWelch and Viterbi were run based on the assumption of 3 states. The resulting model was as follows:
 \begin{align*}
 (\lambda_1,\lambda_2,\lambda_3) &= (0.0289,1.28,15.5)\\
 S &= \{\lambda_1,\lambda_2,\lambda_3\}\\
@@ -280,13 +280,13 @@ And, with the states shaded in in the colours represented above, the transitions
 
 \begin{figure}[h!]
 \includegraphics[width = \textwidth]{./images/fit_mmpp2.png}
-\caption{The twitter data, with predicted states shaded - $\lambda_1$ in red, $\lambda_2$ in yellow, $\lambda_3$ in green. Since $\lambda_3$ is a burst state which only lasts for 12 minutes and contains several tweets, it can be difficult to see behind those tweets}
+\caption{The twitter data, with predicted states shaded - $\lambda_1$ in red, $\lambda_2$ in yellow, $\lambda_3$ in green. Since $\lambda_3$ is a burst state which, on average, only lasts for 12 minutes and contains several tweets, it can be difficult to see the green behind those tweets}
 \label{fit_mmpp2}
 \end{figure}
 
-From this distance, we already see at least some kind of sensible behavior - the user seems to have regular sleeping patterns, tweeting during the day and not tweeting at night-time. Zooming in on a single day, we see some more sensible results - the burst mentioned before has been noticed and highlighted, and the normal day-to-day tweets all remain in the same state. The three states correspond to intuitive states for a human to occupy - in state $\lambda_1$ the user is asleep or otherwise away from the computer, tweeting roughly once every 50 hours, but only staying there for about 10 hours. In state $\lambda_2$, the user is awake, online, and going about his day as usual - as an active twitter user he tweets about 1.3 times per hour. Roughly every hour, the user will then either go to bed with probability ~$0.4$, or enter into a conversation with someone and produce a burst with probability ~$0.6$ - bursts are tweets produced at a rate of 15 per hour, or one every 4 minutes, and last around 12 minutes on average. This all seems fairly reasonable, though the probabilities of of the transitions out of the awake state seem
+From this distance, we already see at least some kind of sensible behavior - the user seems to have regular sleeping patterns, tweeting during the day and not tweeting at night-time. Zooming in on a single day, we see some more sensible results - the burst mentioned before has been noticed and highlighted, and the normal day-to-day tweets all remain in the same state. The three states correspond to intuitive states for a human to occupy - in state $\lambda_1$ the user is asleep or otherwise away from the computer, tweeting on average once every 50 hours, but only staying there for 10 hours on average. In state $\lambda_2$, the user is awake, online, and going about his day as usual - as an active twitter user he tweets about 1.3 times per hour. On average, every hour, the user will then either go to bed with probability ~$0.4$, or enter into a conversation with someone and produce a burst with probability ~$0.6$ - bursts are tweets produced at a rate of 15 per hour, or one every 4 minutes, and last around 12 minutes on average.
 
-We can evaluate this model by performing a Kolmogorov-Smirnov test on the data for each state. We take our null hypothesis to be that the emissions within each state follow an exponential distribution whose rate matches the observed rate. Running this test, we find, however, that it very much does not - the p-values for each state were less than $2.2 \times 10^{16}$ - to say that this is low would be an understatement.
+We can evaluate this model by performing a Kolmogorov-Smirnov test on the data for each state. We take our null hypothesis to be that the emissions within each state follow an exponential distribution whose rate matches the observed rate. Running this test, we find, however, that they very much do not - the p-values for each state were less than $2.2 \times 10^{16}$ - to say that this is low would be an understatement.
 
 Whilst 3 states makes sense intuitively, there's no reason why this is definitely the case, so let's try different numbers of states. We can find the optimal number based on the Bayesian Information Criterion \cite{BIC}. Given an estimated model, we can define the Bayesian Information Criterion, $BIC$, as
 
@@ -294,11 +294,11 @@ $$
 BIC = -2 \ln L + k \ln n
 $$
 
-Where $\ln L$ is the log-likelihood of the fitted model, ie the natural logarithm of the probability of observing the data given that the model is correct, $k$ is the number of parameters fitted by model, and $n$ is the number of data points used to fit the model.
+Where $\ln L$ is the log-likelihood of the fitted model, ie the natural logarithm of the probability of observing the data given that the model is correct, $k$ is the number of parameters fitted by model, and $n$ is the number of data points used to fit the model. Faced with the choice of two different models, we select the one with the lower BIC.
 
-An MMPP of $s$ states has $k=s^2+s-1$ free parameters - $Q$ contains $s^2$ elements, but each of the $s$ diagonal elements can be determined by the row on which it resides, we fit $s$ states, each of which is freely choosable, and $\delta$ has $s$ elements, one of which can be determined from the other $s-1$. The number of data points is the number of tweets we've observed, and the log likelihood is given by the Baun-Welch algorithm.
+An MMPP of $s$ states has $k=s^2+s-1$ free parameters - $Q$ contains $s^2$ elements, but each of the $s$ diagonal elements can be determined by the row on which it resides, we fit $s$ states, each of which is freely choosable, and $\delta$ has $s$ elements, one of which can be determined from the other $s-1$. The number of data points is the number of tweets we've observed, and the log likelihood is returned by the Baum-Welch algorithm.
 
-675 iterations of Baum-Welch were run over the data until a local optimum was reached. This optimum occured at 4 states with a BIC of 1470, described as follows:
+500 iterations of Baum-Welch were run over the data for varying numbers of states until the BIC stopped decreasing. This optimum occured at 4 states with a BIC of 1470, described as follows:
 
 \begin{align*}
 (\lambda_1,\lambda_2,\lambda_3,\lambda_4) &= (0.0223,0.511,6.14,28.3)\\
@@ -406,7 +406,7 @@ And now, observing figures \ref{density_mmpp1_state1} to \ref{density_mmpp1_stat
 
 Summing lognormal distributions into some stochastic process in the same way that we sum exponential distributions into a poisson process carries all manner of problems, however. The lognormal distribution is not memoryless, so the resulting processes within each state will be non-markovian, meaning that simple fitting algorithms like Baum-Welch and Viterbi require much more sophisticated modifications to work correctly.
 
-We can, however, fit a discrete model to the data using a DTHMM with lognormal emissions, so let's do that. We take the natural logarithm of all the differences in emission times, fit multiple models and evaluate their BICs. Here, each state requires 2 parameters, a mean and a standard deviation, so the number of free parameters in an s-state model is now $s^2+2s-1$. We find that the optimal number of states is 3, and go ahead again with the KS tests, correcting the parameters for the estimated emissions within each state, resulting in p-values of 0.312, 0.156 and 0.420. At last, we have some statistically significant results, with the following parameters;
+We can, however, fit a discrete model to the data using a DTHMM with lognormal emissions, so let's do that. We take the natural logarithm of all the differences in emission times, fit multiple models and evaluate their BICs. Here, each state requires 2 parameters, a mean and a standard deviation, so the number of free parameters in an s-state model is now $s^2+2s-1$. We find that the optimal number of states is 3, and go ahead again with the KS tests, making minor corrections to the parameters for the estimated emissions within each state, resulting in p-values of 0.312, 0.156 and 0.420. At last, we have some statistically significant results, with the following parameters;
 
 \begin{align*}
 S &= \{1,2,3\}\\

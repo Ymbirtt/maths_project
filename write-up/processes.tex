@@ -2,7 +2,7 @@
 
 \subsection{A Formal Definition}
 
-A stochastic process \cite[p590]{doob96} is a collection $\{X_t  | t \in T\}$ (sometimes $X(t)$ for continuous $T$) of random variables. These collections may be indexed arbitrarily, but tend to be used to describe the evolution of some random series of events, using $T$ to be some representation of either discrete or continuous time, for instance $X_t$ may be the number of observed emissions from a radioactive source after $t$ minutes or the licence plate of the $t^{th}$ car to go past a speed camera.
+A stochastic process \cite[p590]{doob96} is a collection $\{X_t : t \in T\}$ (sometimes $X(t)$ for continuous $T$) of random variables. These collections may be indexed arbitrarily, but tend to be used to describe the evolution of some random series of events, using $T$ to be some representation of either discrete or continuous time, for instance $X_t$ may be the number of observed emissions from a radioactive source after $t$ minutes or the licence plate of the $t^{th}$ car to go past a speed camera.
 
 A Discrete Time Markov Chain (DTMC) is a particular form of discrete-time stochastic process - one which obeys the Markov Property. We usually set $T=\{0,1,2,...\}=\mathbb{N}$ and we say that $(X_t)_{t \in \mathbb{N}}$ obeys the Markov Property iff
 
@@ -12,11 +12,10 @@ $$
 
 We refer to $S$ as the state-space, each $s \in S$ is a state, and $X_t$ represents the state at time t. We usually write the Markov Property as ``given the present, the future is conditionally independent of the past" \cite{mwmarkov}.
 %COVER THIS IN G&S CITATIONS
-
-There is also a Continuous Time Markov Chain (CTMC, sometimes CTMP for Continuous Time Markov Process). We set $T=\mathbb{R}^{+}$,and define a similar Markov Property;
+There is also a Continuous Time Markov Chain (CTMC, sometimes CTMP for Continuous Time Markov Process). We set $T=\mathbb{R}^{+}$, and define a similar Markov Property;
 
 $$
-\forall \delta > 0, s \in S \quad \pr (X(t+\delta) = s | \{X(\tau), \tau < t\}) = \pr (X(t+\delta) = s | X_t)
+\forall \delta > 0, s \in S \quad \pr (X(t+\delta) = s | \{X(\tau) : \tau \leqslant t\}) = \pr (X(t+\delta) = s | X_t)
 $$
 
 We'll be dealing exclusively with the discrete-space case in this project, ie a Markov Chain where $S$ is discrete, though we'll need to use both continuous and discrete times. It is popular for many authors to set $S \subseteq \mathbb{Z}$, though our states can be integers, real numbers, popes, or any other completely arbitrary non-empty set. Where $S$ and $T$ are discrete, we define $\mathbf{\delta} = (\delta_i)_{i \in S}$, the initial probability vector, and $\Pi = (\pi_{ij})_{(i,j) \in S^2}$, the matrix of transition probabilities, such that,
@@ -44,7 +43,7 @@ $$
 \forall i,j \in S, \delta>0 \quad \pr (X(t+\delta)=j|X(t)=i) = (e^{\delta Q})_{ij}
 $$
 
-That is, the $i,j^{th}$ element of the matrix exponential of $\delta Q$. With the initial probability vector $\delta$ defined as before, we can uniquely define any CTMP with the triple $(S,\delta,Q)$. $Q$'s row sums are always 0, with all off-diagonal elements being positive, and all diagonal elements being negative, ie
+That is, the $i,j^{th}$ element of the matrix exponential of $\delta Q$. With the initial probability vector $\delta$ defined as before, we can uniquely define any CTMC with the triple $(S,\delta,Q)$. $Q$'s row sums are always 0, with all off-diagonal elements being positive, and all diagonal elements being negative, ie
 
 \begin{align*}
 \forall i,j \in S, i \neq j => q_{ij} > 0 \\
@@ -95,7 +94,7 @@ We can then say that a DTMC will hop from node to node at each time step with pr
 \Output{$\mathbf{s}$, a vector of states $s_i$, recording the sequence of states visited by the chain}
 
 \Begin{
-	$s_1 <- \sigma \quad wp \; \; \delta_\sigma$ \tcc{s0 takes on state sigma 
+	$s_1 <- \sigma \quad wp \; \; \delta_\sigma$ \tcc{s1 takes on state sigma 
 											with probability delta sigma}
 	\For{$n <- 2$ \KwTo $T$}{
 		$s_n <- \sigma \quad wp \; \; \pi_{s_{n-1},\sigma}$
@@ -105,15 +104,15 @@ We can then say that a DTMC will hop from node to node at each time step with pr
 }
 \end{algorithm}
 
-A CTMP is slightly more complex; on arriving in a state $i$, a random time $T \sim Exp(-q_{ii})$ is generated. The CTMP will remain in state $i$ for $T$ units of time, then jump to state $j$ with probability $\frac{-q_{ij}}{q_{ii}}$. We can simulate a CTMP with algorithm \ref{algctmp}.
+A CTMC is slightly more complex; on arriving in a state $i$, a random time $T \sim Exp(-q_{ii})$ is generated. The CTMC will remain in state $i$ for $T$ units of time, then jump to state $j$ with probability $\frac{-q_{ij}}{q_{ii}}$. We can simulate a CTMC with algorithm \ref{algctmp}.
 
 \begin{algorithm}
 \SetAlgoLined
 \SetKwInOut{Input}{input}
 \SetKwInOut{Output}{output}
 
-\caption{A Simulation Algorithm for the generic CTMP}\label{algctmp}
-\Input{$(S,\delta,Q)$, a CTMP, and $T$, a maximum time for which to simulate the process}
+\caption{A Simulation Algorithm for the generic CTMC}\label{algctmc}
+\Input{$(S,\delta,Q)$, a CTMC, and $T$, a maximum time for which to simulate the process}
 \Output{$\mathbf{t}$, a vector of pairs $(t_i,s_i)$, recording the time and destination of the $i^{th}$ transition.}
 
 \Begin{
@@ -135,13 +134,13 @@ A CTMP is slightly more complex; on arriving in a state $i$, a random time $T \s
 
 \subsection{The Poisson Process}
 
-The simplest form of CTMP is the homogeneous Poisson rocess, where $S = \mathbb{N}$ and $\forall i \in S, q_{ii}=-\lambda, q_{i,i+1} = \lambda$. We call $\lambda$ the rate of this process. If $N(t)$ is a Poisson process, we then have that
+The simplest form of CTMC is the homogeneous Poisson process, where $S = \mathbb{N}$ and $\forall i \in S, q_{ii}=-\lambda, q_{i,i+1} = \lambda$. We call $\lambda$ the rate of this process. If $N(t)$ is a Poisson process, we then have that
 
 $$
 \forall i \in \mathbb{N}, t,\varepsilon \in \mathbb{R}^{+}, \pr (N(t+\varepsilon) = i+1 | N(t) = i) = \lambda \varepsilon + o(\varepsilon)
 $$
 
-Note that $N$ is the associating counting process - a stochastic process - not a distribution or a random variable. The graph for this process is similarly simple
+Note that $N$ is the associated counting process - a stochastic process - not a distribution or a random variable. The graph for this process is similarly simple
 
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.5cm]
   \node[state]         (0)                     {0};
@@ -157,13 +156,13 @@ Note that $N$ is the associating counting process - a stochastic process - not a
   \draw[dashed] (3) -- (etc);
 \end{tikzpicture}
 
-Implicit from this, we see that the process can only increase - once leaving a state, we never return, so we can define the emission times $t_n$, as $t_n = \min\{t | N(t)\geqslant n\}$. We can also define $\tau_n = t_n-t_{n-1}$, the inter-arrival times for the $n^{th}$ jump for $n \{1,2,...\}$. We refer to these as emissions and arrivals since a Poisson Process generally models a counting process whereby we record the times at which we observe things happening, eg the times at which radioactive particles are detected from a radioactive material. The most crucial property of the Poisson process for this work, implicit from the simulation algorithm above, is that
+Implicit from this, we see that the process can only increase - once leaving a state, we never return, so we can define the emission times $t_n$, as $t_n = \min\{t | N(t)\geqslant n\}$. We can also define $\tau_n = t_n-t_{n-1}$, the inter-arrival times for the $n^{th}$ jump for $n \in \{1,2,...\}$. We refer to these as emissions and arrivals since a Poisson Process generally models a counting process whereby we record the times at which we observe things happening, eg the times at which radioactive particles are detected from a radioactive material. The most crucial property of the Poisson process for this work, implicit from the simulation algorithm above, is that
 
 $$
 \forall n \in \mathbb{N} \; \; \tau_n \sim Exp(\lambda)
 $$
 
-That is, the inter-arrival times are all exponentially distributed. A modification of the generic CTMP simulation algorithm can be made for simulating  a Poisson Process. Since it's only possible to jump from state $i$ to state $i+1$, we need not record the destinations of each jump; jump $i$ will always take us to state $i$. This is detailed in algorithm \ref{algpp}.
+That is, the inter-arrival times are all exponentially distributed. A modification of the generic CTMC simulation algorithm can be made for simulating  a Poisson Process. Since it's only possible to jump from state $i$ to state $i+1$, we need not record the destinations of each jump; jump $i$ will always take us to state $i$. This is detailed in algorithm \ref{algpp}.
 
 \begin{algorithm}
 \SetAlgoLined
@@ -224,7 +223,7 @@ So we keep each point in the given poisson process with a probability proportion
 
 The Hidden Markov Model is an extention of the Markov Chain.
 
-With discrete time and state space, rather than having a directly observable Markov Chain, it is assumed that the process has an underlying unobservable Markov Chain. An observation space, $Y$ is defined, and a set of probability distrubtions, $\{p_s | s \in S\}$. Before jumping out of state $s$, the Markov Chain emits observation $y$ with probability $P_s(y)$. Alternatively, we can define a continuous $Y$ with probability densities instead of a probability distribution.
+With discrete time and state space, rather than having a directly observable Markov Chain, it is assumed that the process has an underlying unobservable Markov Chain. An observation space, $Y$ is defined, and a set of probability distrubtions, $\{P_s | s \in S\}$. Before jumping out of state $s$, the Markov Chain emits observation $y$ with probability $P_s(y)$. Alternatively, we can define a continuous $Y$ with probability densities instead of a probability distribution.
 
 The traditional example is that of the ``unfair casino". Imagine the dealer at the casino has two six-sided dice. Die one is fair, but die two is weighted such that it never shows a 6, and shows the numbers 1 to 5 with equal probabilities. The dealer will clandestinely swap the dice with probability $0.1$ before rolling. He selects his first die uniformly. We can represent this as follows;
 
@@ -243,12 +242,11 @@ y \in Y => p_1(y) &= \frac{1}{6}\\
 y \in Y \setminus \{6\} => p_2(y) &= \frac{1}{5}
 \end{align*}
 
-We can only observe the results of the dice rolls, but what we're interested in is the sequence of states entered by the model. Which die is the dealer using at which time?. Further to this, suppose we didn't know the above parameters in advance. We may also want to estimate them from our observations in some way.
+We can only observe the results of the dice rolls, but what we're interested in is the sequence of states entered by the model. Which die is the dealer using at which time? Further to this, suppose we didn't know the above parameters in advance. We may also want to estimate them from our observations in some way.
 
 \section{The Markov-Modulated Poisson Process}
 
-The Markov-Modulated Poisson Process (MMPP) is a particular form of Hidden Markov Model. We assume that, underlying an emittor, there is a CTMP. Each state is tied to a fixed Poisson Process rate, so $S = \{\lambda_1,...,\lambda_n\}$. The instantaneous rate of the poisson process is then defined by the state in which the underlying CTMP resides. We can define such a process by letting $\mathbf{t} = ((t_0,s_0),...,(t_n,s_n))$ be a trace of the CTMP as generated by algorithm \label{algctmp}
-, and $\lambda : [0,T]->S$ be the step function generated by simulating the underlying CTMP, ie;
+The Markov-Modulated Poisson Process (MMPP) is a particular form of Hidden Markov Model. We assume that, underlying an emittor, there is a CTMC. Each state is tied to a fixed Poisson Process rate, so $S = \{\lambda_1,...,\lambda_n\}$. The instantaneous rate of the poisson process is then defined by the state in which the underlying CTMC resides. We can define such a process by letting $\mathbf{t} = ((t_0,s_0),...,(t_n,s_n))$ be a trace of the CTMC as generated by algorithm \ref{algctmc}, $[n-1] = \{1,2,...,n-1\}$, and $\lambda : [0,T]->S$ be the step function generated by simulating the underlying CTMC, ie;
 
 $$
 \lambda(\tau) = 
@@ -258,9 +256,9 @@ $$
 \end{cases}
 $$
 
-We then have that an inhomogeneous poisson process of rate $\lambda$ is a single trace of this MMPP. In order to generate multiple traces, it is necessary for us to produce a new rate function $\lambda$ from the underlying CTMP for each trace.
+We then have that an inhomogeneous poisson process of rate $\lambda$ is a single trace of this MMPP. In order to generate multiple traces, it is necessary for us to produce a new rate function $\lambda$ from the underlying CTMC for each trace.
 
-Though this is correct, I personally find that it is simpler to imagine an MMPP as the concatenation of a series of poisson processes, each generated within a particular state of the underlying CTMP, eg the underlying CTMP enters state $s_1$ at time $t_1$. It generates emissions as a Poisson Process of rate $s_1$ for $t_2-t_1$ time units. It then stops acting like this poisson process, and starts generating emissions as a poisson process of rate $s_2$ for $t_3-t_2$ time units.
+Though this is correct, I personally find that it is simpler to imagine an MMPP as the concatenation of a series of poisson processes, each generated within a particular state of the underlying CTMC, eg the underlying CTMC enters state $s_1$ at time $t_1$. It generates emissions as a Poisson Process of rate $s_1$ for $t_2-t_1$ time units. It then stops acting like this poisson process, and starts generating emissions as a poisson process of rate $s_2$ for $t_3-t_2$ time units.
 
 It's not immediately obvious that this intuition matches the definition, so it's worth arguing that this is the case.
 
@@ -274,7 +272,7 @@ $$
 \end{cases}
 $$
 
-Let $\{N_1(t) | t \in [0,T1)\}$ be a poisson process of rate $\lambda_1$, similarly for $N_2$ and $N$, and let $\widetilde{N}$ be defined thus;
+Let $\{N_1(t) | t \in [0,T_1)\}$ be a poisson process of rate $\lambda_1$, similarly for $N_2$ and $N$, and let $\widetilde{N}$ be defined thus;
 
 $$
 \widetilde{N}(\tau) = 
@@ -295,7 +293,7 @@ Let $\tau \in [0,T_1)$ and $\varepsilon>0$ be such that $\tau + \varepsilon < T_
 	&= \lambda(\tau)\varepsilon + o(\varepsilon)
 \end{align*} 
 
-So $\widetilde{N}$ is similar to a poisson process of rate $\lambda$ within the range $[0,T_1)$.
+So $\widetilde{N}$ is identical to a poisson process of rate $\lambda$ within the range $[0,T_1)$.
 
 Now let $\tau \in [T_1,T)$ and $\varepsilon>0$ be such that $\tau + \varepsilon < T$. We have that
 
@@ -303,11 +301,10 @@ Now let $\tau \in [T_1,T)$ and $\varepsilon>0$ be such that $\tau + \varepsilon 
 \pr (\widetilde{N}(\tau+\varepsilon) - \widetilde{N}(\tau) = 1)
 	&= \pr (N_2(\tau-T_1+\varepsilon) + N_1(T_1) - N_2(\tau-T_1) - N_1(T_1)= 1)\\
 	&= \pr (N_2(\tau-T_1+\varepsilon) - N_2(\tau-T_1) = 1)\\
-	&= \pr (N_2(\tau-T_1+\varepsilon) - N_2(\tau-T_1) = 1)\\
 	&= \lambda_2(\tau-T_1)\varepsilon + o(\varepsilon) \\
 	&= \lambda(\tau)\varepsilon + o(\varepsilon)
 \end{align*}
 
-So $\widetilde{N}$ is similar to a poisson process of rate $\lambda$ within the range $[T_1,T)$. We need not deal with the case where $\tau$ and $\tau+\varepsilon$ are either side of $T_1$, since we can always choose an $\varepsilon$ small enough such that this is not the case - these probabilities always assume that $\varepsilon$ is close to 0. So we have that $\widetilde{N}$ is distributed identically to $N$.
+So $\widetilde{N}$ is identical to a poisson process of rate $\lambda$ within the range $[T_1,T)$. We need not deal with the case where $\tau$ and $\tau+\varepsilon$ are either side of $T_1$, since we can always choose an $\varepsilon$ small enough such that this is not the case - these probabilities always assume that $\varepsilon$ is close to 0. So we have that $\widetilde{N}$ is distributed identically to $N$.
 
-So concatenating two poisson processes of rates $\lambda_1$ and $\lambda_2$ produces a new poisson process of rate $\lambda_1||\lambda_2$, and it follows from simple induction that an MMPP can be thought of as the concatenation of multiple bounded-length homogeneous poisson processes of rates determined by the state of the underlying CTMP, and time bounds determined by the length of time spent in each state of the underlying CTMP.
+So concatenating two poisson processes of rates $\lambda_1$ and $\lambda_2$ produces a new poisson process of rate $\lambda_1||\lambda_2$, and it follows from simple induction that an MMPP can be thought of as the concatenation of multiple bounded-length homogeneous poisson processes of rates determined by the state of the underlying CTMC, and time bounds determined by the length of time spent in each state of the underlying CTMC.
