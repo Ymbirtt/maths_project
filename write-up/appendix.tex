@@ -23,14 +23,16 @@ Figure \ref{integral_fun_1} shows a Poisson process of rate $\lambda$, alongside
 
 So if $N$ is a Poisson process of rate $\lambda$, then it's also a function whose value we expect to increase at a rate of $\lambda$ meaning that, with enough samples, $N$ would approximate an indefinite integral of the function $\lambda$. Currently, the standard method for evaluating difficult integrals computationally is to use the Monte-Carlo ``dartboard" algorithm \cite[\textsection 2]{montecarlo}, though this is only capable of evaluating a single, definite integral. If we had an approximation of the indefinite integral function, we could evaluate arbitrarily many definite integrals by just looking up values from the function. Figure \ref{integral_fun_2} shows an aproximation of the integral of $\sin\left(\frac{x}{5}\right)+1$, taken by simulating 50 Poisson process for a total of roughly 5,000 emissions, each emission only incrementing the process by $0.02$, rather than 1. Here, we see a very close approximation of the true integral. The dartboard algorithm usually uses tens of thousands of randomly generated points to evaluate a single definite integral.
 
-\begin{figure}[h]
-\includegraphics[width = \textwidth]{./images/integral_fun_1.png}
+\begin{figure}
+\centering
+\includegraphics[width = 0.4\textwidth]{./images/integral_fun_1.png}
 \caption{A trace of an inhomogeneous Poisson process used to estimate an integral, alongside its true integral, plotted with 620 Poisson emissions}
 \label{integral_fun_1}
 \end{figure}
 
-\begin{figure}[h]
-\includegraphics[width = \textwidth]{./images/integral_fun_2.png}
+\begin{figure}
+\centering
+\includegraphics[width = 0.4\textwidth]{./images/integral_fun_2.png}
 \caption{A trace of an inhomogeneous Poisson process used to estimate an integral, alongside its true integral, plotted with 5153 Poisson emissions}
 \label{integral_fun_2}
 \end{figure}
