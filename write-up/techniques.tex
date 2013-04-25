@@ -1,8 +1,8 @@
-Now that we've defined a selection of random processes, we can start discussing what might be appropriate to fit to our data. We'll define a particular emission model, simulate it, and then see what we can recover from it.
+Now that we've defined a selection of random processes, we can start discussing what might be appropriate to fit to our data. Before fitting data to a model, however, it is important to reassure ourselves that, given a realisation of a known process of known parameters, we can recover those parameters from the realisation to a reasonable degree of accuracy. The first step in any consideration will be to ensure that we have some method of recovery.
 
 \section{Fitting a Non-Homogeneous Poisson Process}
 
-The simplest place to start would be a homogeneous Poisson process, though a cursory glance at our data suggests that this would not be appropriate - the user is clearly tweeting at different rates at different times of day, and is not homogeneous. Let's try a non-homogeneous Poisson process. We start by simulating a Poisson process of known rate function, and seeing how well we can recover it. Let the rate function be defined as:
+The simplest place to start would be a homogeneous Poisson process, though a cursory glance at our data in figure \ref{raw_data} suggests that this would not be appropriate - the user is clearly tweeting at different rates at different times of day, and is not homogeneous. Let's try a non-homogeneous Poisson process. We start by simulating a Poisson process of known rate function, and seeing how well we can recover it. Let the rate function be defined as:
 
 $$
 \lambda(t) = 
@@ -31,13 +31,13 @@ The process was simulated for 100 hours, producing a trace such as the one displ
 
 \end{figure}
 
-We can fit a step function by observing multiple traces of these Poisson processes, taking the differences in emission times, then attempting to cluster them with the k-means algorithm \cite{kmeans}. The average number of emissions per trace is the integral of the rate wrt time over the time interval for which we observe, ie if $N$ is the number of observed emissions in a single trace,
+We can fit a step function by observing multiple traces of these Poisson processes, taking the differences in emission times, then attempting to cluster them with the k-means algorithm \cite{kmeans}. Other approaches are possible, but because of how a step function can simulte an arbitrary function, and how easy it is to find implementations of k-means, these will suffice as an early heuristic. The average number of emissions per trace is the integral of the rate with respect to time over the time interval for which we observe, ie if $N$ is the number of observed emissions in a single trace,
 
 $$
 \mathbb{E}(N) = \int^{100}_0 \lambda(t) \; dt = 600
 $$
 
-So if we run out 6 traces we'll observe roughly $3,600$ emissions, a little more than our real data set. Fitting a function to these gives us the results from Figure \ref{fit_nonhom1}. Eyeballing this, we see that it's not a terrible fit in this first attempt, but if we try a more complex rate function, a situation similar to Figure \ref{fit_nonhom2} happens. The estimations are well off the mark. We could instead attempt to fit a polynomial function with maximum likelihood or least squares or similar, but this requires more parameters, and completely ignores bursts. These bursts occur at random times throughout the day, and last for random lengths of time, but they all take on the same form. This heavily restricts our function. We can't simply say that at some particular time there is always a burst, but we also cannot deny their existence by smoothing them out since these bursts, by their very nature, will account for the majority of the observed tweets.
+So if we run out 6 traces we'll observe roughly $3,600$ emissions, a little more than our real data set. It's possible to attempt to fit this function with less data, but more data will give a more accurate result. Fitting a function to these gives us the results from Figure \ref{fit_nonhom1}. Eyeballing this, we see that it's not a terrible fit in this first attempt, but if we try a more complex rate function, a situation similar to Figure \ref{fit_nonhom2} happens. The estimations are well off the mark. We could instead attempt to fit a polynomial function with maximum likelihood or least squares or similar, but this requires more parameters, and completely ignores bursts. These bursts occur at random times throughout the day, and last for random lengths of time, but they all take on the same form. This heavily restricts our function. We can't simply say that at some particular time there is always a burst, but we also cannot deny their existence by smoothing them out since these bursts, by their very nature, will account for the majority of the observed tweets.
 
 Clearly, a different approach is needed.
 
@@ -52,16 +52,17 @@ Clearly, a different approach is needed.
 
 \section{Fitting a Markov-Modulated Poisson Process}
 
-An MMPP seems ideal then, capturing the simplicity of a step function, and letting us model the idea of randomly distributed bursts throughout a day. Indeed, several authors have postulated that such a model would be ideal for simulating human behaviour %lots of citations go here
-but there have so far been no actual quantifiable studies of its relevance. Part of the reason for this is likely the lack of algorithms.
+An MMPP seems ideal then, capturing the simplicity of a step function, and letting us model the idea of randomly distributed bursts throughout a day. Indeed, several authors have postulated that such a model would be ideal for simulating such data \cite{mmpp1}\cite{mmpp2}\cite{mmpp3}, but there have so far been no actual quantifiable studies of its relevance. This could be for a number of reasons, partially due to the lack of algorithms, but also possibly because these studies focus on email data sets as opposed to twitter. The twitter user in this study is far more active than the average email account, yielding a vast quantity of data to fit, and making the true quality of the model all the clearer.
 
-Fitting a Hiddin Markov Model of any kind relies on two main algorithms, Baum-Welch \cite{baumwelch} and Viterbi \cite{viterbi}. The Baum-Welch Algorithm is an expectation-maximisation algorithm for finding the transition probabilities/rates and the emission probabilities, given a set of possible emissions, a number of states to fit and an observed sequence of emissions. The algorithm runs iteratively over the observed data, incrementally increasing the likelihood of the estimated model given the observations, as such it needs an artificially defined stopping condition. In this project, we'll either use some fixed number of iterations, or stop when the log-likelihood increases by less than $10^{-6}$ between some pair of iterations. Viterbi will take an observed sequence of emissions and the parameters of an HMM, and produce the most likely state in which each of these emissions happened. The HiddenMarkov package hosted on CRAN \cite{hiddenmarkov} is the only easily-accessible Hidden Markov Model package which supports the Markov Modulated Poisson Process, but does not contain any implementation of the Viterbi algorithm. We have two ways of working around this, either write our own or discretise the process.
+Fitting a Hiddin Markov Model of any kind relies on two main algorithms, Baum-Welch \cite{baumwelch} and Viterbi \cite{viterbi}. The Baum-Welch algorithm is an expectation-maximisation algorithm for estimating the transition probabilities/rates and the emission probabilities, given a set of possible emissions, a number of states to fit and an observed sequence of emissions. The algorithm runs iteratively over the observed data, incrementally increasing the likelihood of the estimated model given the observations, and as such it needs an artificially defined stopping condition. In this project, we'll either use some fixed number of iterations, or stop when the log-likelihood increases by less than $10^{-6}$ between some pair of iterations. Viterbi will take an observed sequence of emissions and the parameters of an HMM, usually those estimated by Baum-Welch, and produce the most likely state in which each of these emissions happened. The efficacy of these algorithms hinges on knowing the number of states, an issue which will be discussed later.
 
-Since the times between emissions in an MMPP are usually exponentially distributed, we could work in discrete time by letting $y_t$ be the time between the $t^{th}$ and $(t+1)^{th}$ emissions, though this sacrifices some information. We no longer consider the possibility of making multiple transitions between emissions, and ignore the intrinsic link between the times between emissions and the times between state transitions, but this model may also yield some useful results. We'll be trying out both of them.
+The HiddenMarkov package hosted on CRAN \cite{hiddenmarkov} is the only easily-accessible Hidden Markov Model package which supports the Markov Modulated Poisson Process, but does not contain any implementation of the Viterbi algorithm. We have two ways of working around this, either write our own or discretise the process.
+
+Since the times between emissions in an MMPP are usually exponentially distributed, we could work in discrete time by letting $y_t$ be the time between the $t^{th}$ and $(t+1)^{th}$ emissions, though this sacrifices some information. We no longer consider the possibility of making multiple transitions between emissions, and ignore the intrinsic link between the times between emissions and the times between state transitions, but this model may also yield some useful results. We will try both of these approaches.
 
 \subsection{A derivation of the classical Viterbi algorithm}
 
-The Viterbi algorithm for a standard Discrete Time Hidden Markov Model relies on a known, finite observation space $Y$, a known distribution on $Y$ for each state $s$, $P_s$, and known transition probabilities $\pi_i,j$, with known initial probabilities for each state $s$, $\delta_s$. The goal is, given a sequence of $T$ observations $(y_n)_{n \in [T]}$, $y_i \in Y$, to find the sequence of states $(x_n)_{n \in [T]}$ satisfying
+The Viterbi algorithm for a standard Discrete Time Hidden Markov Model relies on a known, finite observation space $Y$, a known or estimated distribution on $Y$ for each state $s$, $p_s$, and known or estimated transition probabilities $\pi_{i,j}$, with known initial probabilities for each state $s$, $\delta_s$. The goal is, given a sequence of $T$ observations $(y_n)_{n \in [T]}$, $y_i \in Y$, to find the sequence of states $(x_n)_{n \in [T]}$ satisfying
 
 $$
 \mathbf{x} = \argmax_{\widehat{\mathbf{x}} \in S^T} \pr(\mathbf{\widehat{x}} | \mathbf{y})
@@ -69,24 +70,30 @@ $$
 
 We call $\mathbf{x}$ the Viterbi Path.
 
-We let $V_{t,s}$ be the probability of the most probable state sequence responsible for the first $t$ observations which ends in state $s$. We have that $V_{1,s}$ is the probability of both being in state $s$ at time 1 and seeing observation $y_1$ from state $s$. A simple application of Bayes' Rule gives us that
+Let $V_{t,s}$ be the probability of the most probable state sequence responsible for the first $t$ observations which ends in state $s$, that is
 
 $$
-V_{1,s} = \pr (y_1|s)\pr(x_1=s)
+V_{t,s} = max_{\mathbf{\widehat{x}} \in S^T} \pr (\mathbf{\widehat{x}}| \mathbf{y})
 $$
 
-Recall that $\delta_s$ is the probability of being in state $s$ at time 1, ie $\pr(x_1=s)$, and that $p_s(y_1)$ is the probability of observing $y_1$ from state $s$, ie $\pr (y_1|s)$. In practice, these won't be known, but estimates of them will be given by the Baum-Welch algorithm, so we will use their maximum-likelihood estimates to give us,
+We have that $V_{1,s}$ is the probability of both being in state $s$ at time 1 and seeing observation $y_1$ from state $s$. A simple application of Bayes' Rule gives us that
 
 $$
-V_{1,s} = P_s(y_1)\delta_s
+V_{1,s} = \pr (y_1|x_1 = s)\pr(x_1=s)
+$$
+
+Recall that $\delta_s$ is the probability of being in state $s$ at time 1, ie $\pr(x_1=s)$, and that $p_s(y_1)$ is the probability of observing $y_1$ from state $s$, ie $\pr (y_1|x_1 = s)$. In practice, these won't be known, but estimates of them will be given by the Baum-Welch algorithm, so we will use their maximum-likelihood estimates to give us,
+
+$$
+V_{1,s} = p_s(y_1)\delta_s
 $$
 
 Given $V_{\tau,s}$ for $\tau < t$, we can find $V_{t,s}$ by noting that the Markov Property implies a form of memorylessness. Given the present, the future is conditionally independent of the past. As such, we need only consider $V_{t-1,s}$ for each $s$, as well as our known parameters. 
 
-The probability of the most likely path that leads us to state $s$ at time $t$ is given by the probability of the most likely path that led us to $s'$ at time $t-1$, and then jumped to $s$ at time $t$, and then emitted $y_t$ from state $s$. The probability of jumping from $s'$ to $s$ is $\pi_{s',s}$. The probability of emitting $y_t$ from state $s$ is $P_s(y_t)$. The probability of the most likely path that leads us to $s'$ at time $t-1$ is $V_{t-1,s'}$. Hence,
+The probability of the most likely path that leads us to state $s$ at time $t$ is given by the probability of the most likely path that led us to some state $s'$ at time $t-1$, and then jumped to $s$ at time $t$, and then emitted $y_t$ from state $s$. The probability of jumping from $s'$ to $s$ is $\pi_{s',s}$. The probability of emitting $y_t$ from state $s$ is $P_s(y_t)$. The probability of the most likely path that leads us to $s'$ at time $t-1$ is $V_{t-1,s'}$. Hence,
 
 $$
-V_{t,s} = P_s(y_t) \max_{s'\in S} (\pi_{s',s}V_{t-1,s'})
+V_{t,s} = p_s(y_t) \max_{s'\in S} (\pi_{s',s}V_{t-1,s'})
 $$
 
 Using this recurrence, we can find $V_{t,s} \forall t \in [T], s \in S$ by a standard dynamic programming algorithm.
@@ -96,10 +103,9 @@ From here, we can then work backwards to find the Viterbi path. $x_T = \argmax_{
 Let
  
 $$
-T_{t,s} = \argmax_{s'\in S}(\pi_{s',s}V_{t-1,s'})
+T_{t,s} = \argmax_{s'\in S}(\pi_{s',s}V_{t-1,s'}),
 $$
-
-Ie, $T_{t,s}$ is the state from which we are most likely to have come at time $t-1$ given that we are in state $s$ at time $t$, we can then see that $x_{t-1} = T_{x_t,t}$. Note the similarities in the definitions of $V$ and $T$ - both can be calculated simultaneously - $V$ is the maximum, $T$ is the argument that maximises. $T_{1,s}$ is never used, so need never be defined. 
+ie, $T_{t,s}$ is the state from which we are most likely to have come at time $t-1$ given that we are in state $s$ at time $t$, we can then see that $x_{t-1} = T_{x_t,t}$. Note the similarities in the definitions of $V$ and $T$ - both can be calculated simultaneously - $V$ is the maximum, $T$ is the argument that maximises. $T_{1,s}$ is never used, so need never be defined. 
 
 Since we have an expression for $x_{t-1}$ in terms of $x_t$ and an expression for $x_T$, we can then recover $\mathbf{x}$, the Viterbi Path. Algorithm \ref{algvitdthmm} gives this in full.
 
@@ -131,17 +137,19 @@ Since we have an expression for $x_{t-1}$ in terms of $x_t$ and an expression fo
 }
 \end{algorithm}
 
+This algorithm is only valid in discrete time. For the continuous time MMPP, modifications are necessary.
+
 \subsection{A First Approximation of the Viterbi Algorithm for the Markov-Modulated Poisson Process}
 
 Recall the dependencies for the DTHMM Viterbi Algorithm. We require knowledge of a finite $Y$, $P_s$ for each $s$, and $\pi_{ij}$ for each pair of states $i,j$.
 
-In an MMPP, we observe a Poisson Process of rate randomly varying between various known rates - the rates being our states. Let $S = \{\lambda_1,...,\lambda_m\}$. Our observations can be interpreted as exponential random variables of these rates. Let $\tau_0 = 0$, and $\tau_i$ be the time of the $i^{th}$ Poisson emission for $i \in [n]$. Let $y_i = \tau_i-\tau_{i-1}$ for $i \in [n]$. Given that the underlying CTMC was in state $\lambda_s$ at time $\tau_i$, we have that $y_i \sim Exp (\lambda_s)$. From the properties of the generic CTMC, the probability that the process is in state $j$ at time $\tau_i$ given that it was in state $i$ at time $\tau_{i-1}$ is given by $(e^{Qy_i})_{\lambda_{i},\lambda_{j}}$. To ease notation, we'll write this as $(e^{Qy_i})_{i,j}$, omitting the $\lambda$s.
+In an MMPP, we observe a Poisson Process of rate randomly varying between various known rates - the rates being our states. Let $S = \{\lambda_1,...,\lambda_m\}$. Our observations can be interpreted as exponential random variables of these rates. Let $\tau_0 = 0$, and $\tau_i$ be the time of the $i^{th}$ Poisson emission for $i \in [n]$. Let $y_i = \tau_i-\tau_{i-1}$ for $i \in [n]$. Given that the underlying CTMC was in state $\lambda_s$ at time $\tau_i$, we have that $y_i \sim \mathrm{Exp} (\lambda_s)$. From the properties of the generic CTMC, the probability that the process is in state $j$ at time $\tau_i$ given that it was in state $i$ at time $\tau_{i-1}$ is given by $(e^{Qy_i})_{\lambda_{i},\lambda_{j}}$. This discretises the process somewhat, and much easier to work with. To ease notation, we'll write this as $(e^{Qy_i})_{i,j}$, omitting the $\lambda$s.
 
 The state space $S$ and transition rates $Q$ are estimated by the Baum Welch algorithm as before, so after running Baum Welch over an observed trace, we can start to find the most likely state at each emission. Note that this ``Viterbi Path" is not the most likely sequence of state transitions, it is instead the most likely state in which the underlying CTMC resides at the time of each emission. 
 
 Since our emissions are continuous, we don't have any notion of ``most probable" - if we model height continuously, the probability that I meet someone exactly 1.8m tall is the same as the probability that I meet someone exactly 18m tall, they're both 0, so instead we'll base our likelihood calculations off probability density, capturing the idea that, even though I don't know for certain that I'll meet one of the two, it's more likely for me to meet the 1.8m tall person.
 
-We let $p_s(t)= \lambda_s e^{-t\lambda_s}$, the probability density of an exponential random varaible of rate $\lambda_s$ evaluated at $t$. Let $V_{t,s}$ be the probability density of the most likely path that leads us to emitting $y_t$ from state $s$. We have that
+We let $p_s(t)= \lambda_s e^{-t\lambda_s}$, the probability density of an exponential random variable of rate $\lambda_s$ evaluated at $t$. Let $V_{t,s}$ be the probability density of the most likely path that leads us to emitting $y_t$ from state $s$. We have that
 
 $$
 V_{1,s} =  \delta_{s}p_s(y_1)
@@ -198,10 +206,9 @@ As a final note, we can further refine the fitted model based on the results of 
 
 \subsection{Applying the Algorithm}
 
-The algorithm was written in R and added to the pre-existing HiddenMarkov \cite{hiddenmarkov}
-package, which was then recompiled to be loaded into an R environment. A Python script was written to call into this library from a more convenient language using RPy2 \cite{rpy}, with mathematical, statistical and visualisation functions loaded from matplotlib \cite{matplotlib}, and SciPy \cite{scipy}.
+The algorithm was written in R and added to the pre-existing HiddenMarkov \cite{hiddenmarkov} package, which was then recompiled to be loaded into an R environment. A Python script was written to call into this library from a more convenient language using RPy2 \cite{rpy} which also allowed with mathematical, statistical and visualisation functions to be loaded in from matplotlib \cite{matplotlib}, and SciPy \cite{scipy}.
 
-As before, we first simulate a model, then see if we can recover it. The simulated model had the following parameters;
+As before, we first simulate a model, then see if we can recover it, reassuring ourselves that the Viterbi implementation is correct. The simulated model had the following parameters;
 
 \begin{align*}
 (\lambda_1,\lambda_2,\lambda_3) &= (0.01,0.5,2)\\
@@ -260,7 +267,7 @@ Comparing the estimated path to the original in a way that clearly displays the 
 
 Now that we've verified that our algorithms are capable of recovering known MMPPs to a high degree of accuracy, it's time to pump our data into it.
 
-The data were preprocessed such that rather than recording exact times and dates of tweets, they instead recorded times since the beginning of the observation in hours at which each tweet occurred. This sequence was then fed into a HiddenMarkov MMPP, over which BaumWelch and Viterbi were run based on the assumption of 3 states. The resulting model was as follows:
+The data were preprocessed such that rather than recording exact times and dates of tweets, they instead recorded times since the beginning of the observation in hours at which each tweet occurred. This sequence was then fed into a HiddenMarkov MMPP, over which BaumWelch and Viterbi were run based on the assumption of 3 states. This assumption is arbitrary, but serves as a nice starting point to generate some early results - we'll address the problem of selecting the number of states later. The resulting model was as follows:
 \begin{align*}
 (\lambda_1,\lambda_2,\lambda_3) &= (0.0289,1.28,15.5)\\
 S &= \{\lambda_1,\lambda_2,\lambda_3\}\\
@@ -281,9 +288,11 @@ And, with the states shaded in in the colours represented above, the transitions
 \label{fit_mmpp2}
 \end{figure}
 
-From this distance, we already see at least some kind of sensible behaviour - the user seems to have regular sleeping patterns, tweeting during the day and not tweeting at night-time. Zooming in on a single day, we see some more sensible results - the burst mentioned before has been noticed and highlighted, and the normal day-to-day tweets all remain in the same state. The three states correspond to intuitive states for a human to occupy - in state $\lambda_1$ the user is asleep or otherwise away from the computer, tweeting on average once every 50 hours, but only staying there for 10 hours on average. In state $\lambda_2$, the user is awake, online, and going about his day as usual - as an active twitter user he tweets about 1.3 times per hour. On average, every hour, the user will then either go to bed with probability ~$0.4$, or enter into a conversation with someone and produce a burst with probability ~$0.6$ - bursts are tweets produced at a rate of 15 per hour, or one every 4 minutes, and last around 12 minutes on average.
+From this distance, we already see at least some kind of sensible behaviour - the user seems to have regular sleeping patterns, tweeting during the day and not tweeting at night-time. Zooming in on a single day, we see some more sensible results - the burst mentioned before has been noticed and highlighted, and the normal day-to-day tweets all remain in the same state. The three states correspond to intuitive states for a human to occupy -- in state $\lambda_1$ the user is asleep or otherwise away from the computer, tweeting on average once every 50 hours, but only staying there for 10 hours on average. In state $\lambda_2$, the user is awake, online, and going about his day as usual - as an active twitter user he tweets about 1.3 times per hour. On average, every hour, the user will then either go to bed with probability ~$0.4$, or enter into a conversation with someone and produce a burst with probability ~$0.6$. This already seems a little odd, and shows the limitation of using a homogeneous model, we seem to be suggesting here that the user goes to bed on average every 1.5 hours, which doesn't fit our notions of how humans actually behave. Bursts are tweets produced at a rate of 15 per hour, or one every 4 minutes, and last around 12 minutes on average.
 
-We can evaluate this model by performing a Kolmogorov-Smirnov test on the data for each state. We take our null hypothesis to be that the emissions within each state follow an exponential distribution whose rate matches the observed rate. Running this test, we find, however, that they very much do not - the p-values for each state were less than $2.2 \times 10^{16}$ - to say that this is low would be an understatement.
+We can test whether this model gives an accurate representation of our data by performing a Kolmogorov-Smirnov \cite{mwkstest} test on the data for each state. This test takes the maximum difference in the cumulative distribution functions for the two data sets, and then compared to a critical value from the Kolmogorov distribution. This test generally requires a large data set to give meaningful results, but we certainly have one here. 
+
+We take our null hypothesis to be that the emissions within each state follow an exponential distribution whose rate matches the observed rate. Running this test, we find, however, that they very much do not - the p-values for each state were less than $2.2 \times 10^{-16}$ -- to say that this is low would be an understatement.
 
 Whilst 3 states makes sense intuitively, there's no reason why this is definitely the case, so let's try different numbers of states. We can find the optimal number based on the Bayesian Information Criterion \cite{bic}. Given an estimated model, we can define the Bayesian Information Criterion, $BIC$, as
 
@@ -293,7 +302,7 @@ $$
 
 Where $\ln L$ is the log-likelihood of the fitted model, ie the natural logarithm of the probability of observing the data given that the model is correct, $k$ is the number of parameters fitted by model, and $n$ is the number of data points used to fit the model. Faced with the choice of two different models, we select the one with the lower BIC.
 
-An MMPP of $s$ states has $k=s^2+s-1$ free parameters - $Q$ contains $s^2$ elements, but each of the $s$ diagonal elements can be determined by the row on which it resides, we fit $s$ states, each of which is freely choosable, and $\delta$ has $s$ elements, one of which can be determined from the other $s-1$. The number of data points is the number of tweets we've observed, and the log likelihood is returned by the Baum-Welch algorithm.
+An MMPP of $|S|$ states has $k=|S|^2+|S|-1$ free parameters - $Q$ contains $|S|^2$ elements, but each of the $|S|$ diagonal elements can be determined by the row on which it resides, we fit $s$ states, each of which is freely choosable, and $\delta$ has $|S|$ elements, one of which can be determined from the other $s-1$. The number of data points is one less than the number of tweets we've observed, and the log likelihood is returned by the Baum-Welch algorithm.
 
 500 iterations of Baum-Welch were run over the data for varying numbers of states until the BIC stopped decreasing. This optimum occurred at 4 states with a BIC of 1470, described as follows:
 
@@ -344,7 +353,7 @@ Y &= \mathbb{R}^{+}\\
 s \in S, y \in Y &=> p_s(y) = \lambda_s e^{-\lambda_sy}\\
 \end{align*}
 
-Which, when we add the Viterbi path to the plot, gives us Figure \ref{fit_dthmm1}.
+Which, when we add the Viterbi path to the plot, gives us Figure \ref{fit_dthmm1}. We perform some new KS tests to find one p-value of 0.03, and four others below $10^{-7}$. From this, we can definitively conclude that the data cannot be well-clustered into a small number of exponentially distributed subsets. We can then conclude that these data do not follow any kind of simple Poisson process, in spite of appearances.
 
 \begin{figure}[h!]
 \centering
@@ -353,15 +362,37 @@ Which, when we add the Viterbi path to the plot, gives us Figure \ref{fit_dthmm1
 \label{fit_dthmm1}
 \end{figure}
 
-And finally perform some new KS tests to find one p-value of 0.03, and four others below $10^{-7}$. From this, we can definitively conclude that the data cannot be well-clustered into a small number of exponentially distributed subsets. We can then conclude that these data do not follow any kind of simple Poisson process, in spite of appearances.
+\section{A Diagnosis}
 
-\section{A Zoo of Problems}
-
-Whilst this gives a fairly strong negative result that this tweeter is not a Poisson process, it doesn't give any real explanation as to why. What went wrong? Inspecting the fitted models we see that the first few emissions don't quite fit in with the rest, but removing these anomalous results does little to the results of the Kolmogorov-Smirnov tests, they remain heavily negative in all cases.
+Whilst this gives a fairly strong negative result that this tweeter is not a Poisson process, it doesn't give any real explanation as to why. What went wrong? Inspecting the fitted models we see that the first few emissions don't quite fit in with the rest, but removing these anomalous results does little to the results of the Kolmogorov-Smirnov tests; they remain heavily negative in all cases.
 
 Let's start looking at the emissions estimated to occur in each state. Since the DTHMM gave slightly better p-values, we'll use that as a jumping-off point.
 
-And now, observing Figure \ref{densities_mmpp1} we see an issue. The fits are close, but the heads of the distributions are light and their tails heavy. Indeed, on inspection, the observed emissions within each state seem closer to a low-variance lognormal distribution - if $X$ follows a lognormal distribution, then $\ln(X)$ follows a normal distribution \cite{mwlognormal}. Plotting a normal density curve alongside the density of the natural logarithm of our observed inter-arrival times, as in Figure \ref{density_mmpp2_state3}, we see something that almost looks like a correlation. Let's try doing this properly.
+And now, observing Figure \ref{densities_mmpp1} we see an issue. The fits are close, but the heads of the distributions are light and their tails heavy. What we really need is a distribution which will allow for these tails, such as the lognormal distribution. If $X$ follows a lognormal distribution, then $\ln(X)$ follows a normal distribution \cite{mwlognormal}.
+
+Summing lognormal distributions into a Markov Modulated Renewal Process in the same way that we sum exponential distributions into a Poisson process carries all manner of problems, however. The lognormal distribution is not memoryless nor is it modally 0, so the resulting processes within each state will be somewhat harder to fit, meaning that simple fitting algorithms like Baum-Welch and Viterbi require much more sophisticated modifications to work correctly in continuous time.
+
+The algorithms for fitting a discrete model to the data using a DTHMM with lognormal emissions are, however, completely unchanged, so let's do that. We take the natural logarithm of all the differences in emission times, fit multiple models and evaluate their BICs. Here, each state requires 2 parameters, a mean and a standard deviation, so the number of free parameters in an s-state model is now $s^2+2s-1$. We find that the optimal number of states is 3, and go ahead again with the KS tests, making minor corrections to the parameters for the estimated emissions within each state, resulting in p-values of 0.312, 0.156 and 0.420, and with densities shown in \ref{densities_mmpp3}. At last, we have some statistically significant results, with the following parameters;
+
+\begin{align*}
+S &= \{1,2,3\}\\
+(\mu_1, \mu_2, \mu_3) &= (-3.33, -1.33, 2.34)\\
+(\sigma_1, \sigma_2, \sigma_3) &= (1.47, 1.86, 0.366)\\
+\delta &= (0,1,0)\\
+\Pi &= 
+\left(
+	\begin{matrix}
+     0.926 & 0.069 & 0.006 \\
+     0.047 & 0.906 & 0.047 \\
+     0.000 & 0.865 & 0.135
+	\end{matrix}
+\right)\\
+Y &= \mathbb{R}\\
+s \in S => p_s(y) &= \frac{\exp({-\frac{(y-\mu_s)^2}{2\sigma_s^2}})}{\sigma_s\sqrt{2\pi}}
+\end{align*}
+
+Given a sequence of emissions from this DTHMM, $\mathbf{y}$, the inter-arrival times are then $\mathbf{t}$ with $t_i = e^{y_i}$. Perhaps a little strangely, shading the states onto our graph as in Figure \ref{fit_dthmm2} gives a less obvious seasonality to the tweeter's behavior. We still have observable and highlighted bursts as well as some regularity to the user's sleeping patterns, but they're less obvious here than with the MMPP. More work would certainly throw up more results, perhaps this requires a continuous time model for such things to be seen, but regardless, this is a positive result for a problem whose solution has so far only been speculated upon, and which shows that these speculations are very likely to be wrong.
+\clearpage
 
 \begin{figure}
 \centering
@@ -388,38 +419,26 @@ And now, observing Figure \ref{densities_mmpp1} we see an issue. The fits are cl
 }
 \caption{The estimated densities of emissions in each state (blue), alongside the actual density of an exponential random variable of rate equal to the rates of the observed emissions in that state}
 \label{densities_mmpp1}
-
 \end{figure}
+
 \begin{figure}
 \centering
-\includegraphics[width = 0.4\textwidth]{./images/density_mmpp2_state3.png}
-\caption{The density of the natural logarithm of the supposedly exponential emissions from state 3 (blue), alongside a normal curve with mean and standard deviation equal to the observed means and standard deviations}
-\label{density_mmpp2_state3}
+\subfloat{
+    \includegraphics[width = 0.4 \textwidth]{./images/density_mmpp3_state1.png}
+    \label{density_mmpp3_state1}
+}
+\subfloat{
+    \includegraphics[width = 0.4 \textwidth]{./images/density_mmpp3_state2.png}
+    \label{density_mmpp3_state2}
+} \\
+
+\subfloat{
+    \includegraphics[width = 0.4 \textwidth]{./images/density_mmpp3_state3.png}
+    \label{density_mmpp3_state3}
+}
+\caption{The estimated densities of the logarithms of emissions in each state (blue), alongside the actual density of a normal random variable of mean and variance equal to those of the logarithms of the observed emissions in that state}
+\label{densities_mmpp3}
 \end{figure}
-
-Summing lognormal distributions into some stochastic process in the same way that we sum exponential distributions into a Poisson process carries all manner of problems, however. The lognormal distribution is not memoryless, so the resulting processes within each state will be non-markovian, meaning that simple fitting algorithms like Baum-Welch and Viterbi require much more sophisticated modifications to work correctly.
-
-We can, however, fit a discrete model to the data using a DTHMM with lognormal emissions, so let's do that. We take the natural logarithm of all the differences in emission times, fit multiple models and evaluate their BICs. Here, each state requires 2 parameters, a mean and a standard deviation, so the number of free parameters in an s-state model is now $s^2+2s-1$. We find that the optimal number of states is 3, and go ahead again with the KS tests, making minor corrections to the parameters for the estimated emissions within each state, resulting in p-values of 0.312, 0.156 and 0.420. At last, we have some statistically significant results, with the following parameters;
-
-\begin{align*}
-S &= \{1,2,3\}\\
-(\mu_1, \mu_2, \mu_3) &= (-3.33, -1.33, 2.34)\\
-(\sigma_1, \sigma_2, \sigma_3) &= (1.47, 1.86, 0.366)\\
-\delta &= (0,1,0)\\
-\Pi &= 
-\left(
-	\begin{matrix}
-     0.926 & 0.069 & 0.006 \\
-     0.047 & 0.906 & 0.047 \\
-     0.000 & 0.865 & 0.135
-	\end{matrix}
-\right)\\
-Y &= \mathbb{R}\\
-s \in S => p_s(y) &= \frac{\exp({-\frac{(y-\mu_s)^2}{2\sigma_s^2}})}{\sigma_s\sqrt{2\pi}}
-\end{align*}
-
-Given a sequence of emissions from this DTHMM, $\mathbf{y}$, the inter-arrival times are then $\mathbf{t}$ with $t_i = e^{y_i}$. Perhaps a little strangely, shading the states onto our graph as in Figure \ref{fit_dthmm2}
-gives a less obvious seasonality to the tweeter's behavior. We still have observable and highlighted bursts as well as some regularity to the user's sleeping patterns, but they're less obvious here than with the MMPP. More work would certainly throw up more results, perhaps this requires a continuous time model for such things to be seen.
 
 \begin{figure}
 \centering

@@ -2,9 +2,12 @@ Modelling human-generated ``random" data is notoriously difficult. Human event d
 
 The data are visualised in Figure \ref{raw_data}. We see a little seasonality - the user seems to be going to sleep at some time, waking up at another time, as well as some ``burstiness", the user will produce a very rapid series of tweets in a very short time. Being able to detect these things would let us intuitively decide whether a fit is good or not, but principally we'll be reliant on statistical tests to judge how good our model is.
 
-Chapter \ref{zoo} will define a series of stochastic processes which will we can use for modelling the data, and then chapter \ref{techniques} will apply the more relevant ones. Of particular note is the Markov-Modulated Poisson Process defined in \textsection\ref{mmppdef}, which several authors \cite{mmpp1}\cite{mmpp2}\cite{mmpp3} have postulated will provide a good model due to its doubly-stochastic nature -- the intuition being that the tweets are a stochastic process, and the parameters of that stochastic process themselves follow another stochastic process. Appendix \ref{fun} also describes a subsidiary result which was spotted during this project, and which may have rather useful applications in other fields.
+Chapter \ref{zoo} will define a series of stochastic processes which will we can use for modelling the data, and then chapter \ref{techniques} will apply the more relevant ones. Of particular note is the Markov-Modulated Poisson Process defined in \textsection\ref{mmppdef}, which several authors \cite{mmpp1}\cite{mmpp2}\cite{mmpp3} have postulated will provide a good model due to its doubly-stochastic nature -- the intuition being that the tweets are a stochastic process, and the parameters of that stochastic process themselves follow another stochastic process. We will attempt to fit this and a series of other models, before concluding that a DTHMM with lognormal emissions provides the best fit
+
+Appendix \ref{fun} also describes a manor result which was spotted during this project, and which may have rather useful applications in other fields.
 
 \begin{figure}[h]
+\centering
 \includegraphics[width = 0.5\textwidth]{./images/raw_data.png}
 \caption{The raw data gathered from the twitter user. Each blue cross marks a tweet at a particular time. The 24 hours of a day run across the x axis, and the days within our 6 months run up the y-axis, so a point at $(17.5, 256)$ is a tweet at 5:30pm 256 days into the observation.}
 \label{raw_data}
