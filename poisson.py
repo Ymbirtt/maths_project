@@ -52,7 +52,7 @@ def plotPoisson(xs, args=''):
     
     l = len(xs)-1
 
-    ys = [x/50 for x in range(len(xs)) for _ in (0,1)][:-1]
+    ys = [x/500 for x in range(len(xs)) for _ in (0,1)][:-1]
     
     xs = [xs[0]]+[x for x in xs[1:] for _ in (0,1)]
 
@@ -104,7 +104,7 @@ def int_foo(x):
     
 def main():
     ys = []
-    samples = 50
+    samples = 500
     bins = 100
     
     tmax = 100
